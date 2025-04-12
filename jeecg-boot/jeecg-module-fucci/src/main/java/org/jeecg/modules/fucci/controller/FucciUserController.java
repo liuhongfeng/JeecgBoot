@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 /**
  * @author lhf
@@ -27,7 +28,7 @@ public class FucciUserController {
 
     @ApiOperation(value = "微信小程序注册登录接口")
     @PostMapping("/login")
-    public Result<?> login(@RequestBody FucciUserLoginDTO fucciUserLoginDTO) {
+    public Result<?> login(@RequestBody @Valid FucciUserLoginDTO fucciUserLoginDTO) {
         return Result.ok(fucciUserService.login(fucciUserLoginDTO));
     }
 
