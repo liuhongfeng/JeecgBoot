@@ -110,6 +110,7 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/sys/getQrcodeToken/**", "anon"); //监听扫码
         filterChainDefinitionMap.put("/sys/checkAuth", "anon"); //授权接口排除
 
+        filterChainDefinitionMap.put("/fucci/user/login", "anon"); // 福羲项目-微信小程序注册登录接口排除
 
         //update-begin--Author:scott Date:20221116 for：排除静态资源后缀
         filterChainDefinitionMap.put("/", "anon");
