@@ -34,12 +34,18 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
 
     @Override
     public JSONObject list() {
+        // 环境访问地址
+        String path = fucciProperties.getPath();
         JSONObject jsonObject = new JSONObject();
         List<FucciGroundVO> fucciGroundVOS = new ArrayList<>();
         List<FcFishGround> fcFishGrounds = fcFishGroundService.list();
         fcFishGrounds.forEach(fcFishGround -> {
             FucciGroundVO fucciGroundVO = new FucciGroundVO();
             BeanUtils.copyProperties(fcFishGround, fucciGroundVO);
+            if (StringUtils.isNotEmpty(path)) {
+                // 完整图片访问地址
+                fucciGroundVO.setHomeImage(path + FucciConstant.STATIC_PATH + fucciGroundVO.getHomeImage());
+            }
             // TODO 月预约数量，暂时写固定值，后续修改
             fucciGroundVO.setMonthlyReservation(300);
             fucciGroundVOS.add(fucciGroundVO);
