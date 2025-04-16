@@ -5,6 +5,11 @@ package org.jeecg.modules.fucci.common.constant;
  */
 public interface FucciConstant {
 
+    /**
+     * 系统静态资源路径
+     */
+    String STATIC_PATH = "/sys/common/static/";
+
     interface User {
         /**
          * 真实姓名（用户昵称）
@@ -19,7 +24,7 @@ public interface FucciConstant {
         /**
          * 用户头像地址
          */
-        String AVATAR_URL = "https://admin.lureexpert.com/jeecgboot/sys/common/static/temp/WechatIMG1881_1743908875667.jpg";
+        String AVATAR_URL = "https://api.lureexpert.com/sys/common/static/temp/WechatIMG1881_1743908875667.jpg";
 
         /**
          * 第三方类型（微信小程序）
