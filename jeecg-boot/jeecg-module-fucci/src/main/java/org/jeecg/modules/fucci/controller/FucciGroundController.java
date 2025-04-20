@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.modules.fucci.pojo.vo.FucciGroundDetailsVO;
+import org.jeecg.modules.fucci.pojo.vo.FucciGroundOrderVO;
 import org.jeecg.modules.fucci.service.IFucciGroundService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +36,13 @@ public class FucciGroundController {
     @GetMapping("/details")
     public Result<FucciGroundDetailsVO> details(@RequestParam(name = "id") String id) {
         return Result.ok(fucciGroundService.details(id));
+    }
+
+    @ApiOperation(value = "钓场船只预约信息查询接口")
+    @GetMapping("/order")
+    public Result<FucciGroundOrderVO> order(@RequestParam(name = "id") String id,
+                                            @RequestParam(name = "date", required = false) String date) {
+        return Result.ok(fucciGroundService.order(id, date));
     }
 
 }
