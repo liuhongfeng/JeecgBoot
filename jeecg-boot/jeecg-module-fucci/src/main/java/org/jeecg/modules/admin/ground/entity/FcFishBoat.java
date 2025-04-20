@@ -68,7 +68,7 @@ public class FcFishBoat implements Serializable {
     @Excel(name = "删除状态（0:正常，1:删除）", width = 15)
     @ApiModelProperty(value = "删除状态（0:正常，1:删除）")
     @TableLogic
-    private String delFlag;
+    private Integer delFlag;
     /**
      * 创建人
      */
