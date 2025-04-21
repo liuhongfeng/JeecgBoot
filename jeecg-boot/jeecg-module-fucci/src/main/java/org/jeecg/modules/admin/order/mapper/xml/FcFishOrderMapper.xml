@@ -17,7 +17,7 @@
 
     <select id="queryGroundBoatOrderListByDate" resultType="org.jeecg.modules.fucci.pojo.vo.FucciGroundBoatOrderVO">
         SELECT
-            ffb.id,
+            ffb.id AS boatId,
             ffb.boat_number,
             ffb.`status`,
             ffb.capacity,

@@ -17,8 +17,8 @@ public class FucciGroundBoatOrderVO {
     /**
      * 船只 id
      */
-    @ApiModelProperty(value = "id")
-    private String id;
+    @ApiModelProperty(value = "boatId")
+    private String boatId;
 
     /**
      * 船号
