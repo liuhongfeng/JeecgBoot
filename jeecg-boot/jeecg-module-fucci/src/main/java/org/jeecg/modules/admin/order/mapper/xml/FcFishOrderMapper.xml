@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.admin.order.mapper.FcFishOrderMapper">
+
+    <select id="queryGroundOrderDateList" resultType="org.jeecg.modules.fucci.pojo.vo.FucciGroundOrderDateVO">
+        SELECT
+            DATE_FORMAT(`date`, '%Y-%m-%d') AS orderDate,
+            COUNT(*) AS orderQuantity
+        FROM fc_fish_order
+        WHERE ground_id = #{groundId}
+        AND del_flag = 0
+        AND status = 1
+        AND `date` &gt;= CURDATE()
+        AND `date` &lt; CURDATE() + INTERVAL 30 DAY
+        GROUP BY DATE_FORMAT(`date`, '%Y-%m-%d')
+    </select>
+
+    <select id="queryGroundBoatOrderListByDate" resultType="org.jeecg.modules.fucci.pojo.vo.FucciGroundBoatOrderVO">
+        SELECT
+            ffb.id AS boatId,
+            ffb.boat_number,
+            ffb.`status`,
+            ffb.capacity,
+            ffb.remark,
+            ffo.id AS orderId,
+            DATE_FORMAT( ffo.`date`, '%Y-%m-%d' ) AS orderDate,
+            IF( ffo.id IS NULL, 0, 1 ) AS reserve
+        FROM
+            fc_fish_boat ffb
+            LEFT JOIN fc_fish_order ffo ON ffo.boat_id = ffb.id
+            AND ffo.del_flag = 0
+            AND DATE_FORMAT( ffo.`date`, '%Y-%m-%d' ) = #{orderDate}
+        WHERE
+            ffb.ground_id = #{groundId}
+            AND ffb.del_flag = 0
+            AND ffb.status = '1'
+    </select>
+
+</mapper>

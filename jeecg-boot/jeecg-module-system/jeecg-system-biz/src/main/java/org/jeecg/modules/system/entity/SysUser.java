@@ -211,4 +211,17 @@ public class SysUser implements Serializable {
      */
     @TableField(exist = false)
     private boolean izBindThird;
+
+    /**
+     * 第三方登录的唯一标识
+     */
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String thirdId;
+
+    /**
+     * 第三方类型
+     */
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String thirdType;
+
 }
