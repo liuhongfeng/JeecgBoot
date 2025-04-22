@@ -2,25 +2,32 @@ package org.jeecg.modules.fucci.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jeecg.common.exception.JeecgBootException;
+import org.jeecg.common.system.util.JwtUtil;
+import org.jeecg.modules.admin.ground.entity.FcFishBoat;
 import org.jeecg.modules.admin.ground.entity.FcFishGround;
+import org.jeecg.modules.admin.ground.service.IFcFishBoatService;
 import org.jeecg.modules.admin.ground.service.IFcFishGroundService;
+import org.jeecg.modules.admin.order.entity.FcFishOrder;
 import org.jeecg.modules.admin.order.mapper.FcFishOrderMapper;
 import org.jeecg.modules.fucci.common.constant.FucciConstant;
 import org.jeecg.modules.fucci.config.FucciProperties;
+import org.jeecg.modules.fucci.pojo.dto.FucciGroundBoatOrderDTO;
 import org.jeecg.modules.fucci.pojo.vo.*;
 import org.jeecg.modules.fucci.service.IFucciGroundService;
+import org.jeecg.modules.system.entity.SysUser;
+import org.jeecg.modules.system.service.ISysUserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -34,7 +41,9 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class FucciGroundServiceImpl implements IFucciGroundService {
 
+    private final ISysUserService sysUserService;
     private final IFcFishGroundService fcFishGroundService;
+    private final IFcFishBoatService fcFishBoatService;
     private final FcFishOrderMapper fcFishOrderMapper;
     private final FucciProperties fucciProperties;
 
@@ -80,6 +89,7 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         return fucciGroundDetailsVO;
     }
 
+    @Override
     public FucciGroundOrderVO order(String id, String date) {
         FucciGroundOrderVO fucciGroundOrderVO = new FucciGroundOrderVO();
         FcFishGround fcFishGround = fcFishGroundService.getById(id);
@@ -109,6 +119,53 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         List<FucciGroundBoatOrderVO> groundBoatOrderList = fcFishOrderMapper.queryGroundBoatOrderListByDate(id, queryDate);
         fucciGroundOrderVO.setGroundBoatOrderList(groundBoatOrderList);
         return fucciGroundOrderVO;
+    }
+
+    @Override
+    public String confirmOrder(HttpServletRequest request, FucciGroundBoatOrderDTO groundBoatOrderDTO) {
+        // 1. 查询用户信息
+        String username = JwtUtil.getUserNameByToken(request);
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysUser::getUsername, username);
+        SysUser sysUser = sysUserService.getOne(queryWrapper);
+        // 2. 检查船只数据状态
+        FcFishBoat fishBoat = fcFishBoatService.getById(groundBoatOrderDTO.getBoatId());
+        if (null == fishBoat) {
+            throw new JeecgBootException("船只不存在");
+        }
+        // 3. 检查钓场数据状态
+        FcFishGround fishGround = fcFishGroundService.getById(fishBoat.getGroundId());
+        if (null == fishGround) {
+            throw new JeecgBootException("钓场不存在");
+        }
+        // 4. 检查票价是否正确 TODO 检查用户是否 vip 用户
+        if (!Objects.equals(groundBoatOrderDTO.getFare(), fishGround.getPrice())) {
+            throw new JeecgBootException("票价有误，请重新进入此页面预约");
+        }
+        // 5. 检查船只是否已被预约
+        LambdaQueryWrapper<FcFishOrder> orderLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        orderLambdaQueryWrapper.eq(FcFishOrder::getGroundId, fishGround.getId());
+        orderLambdaQueryWrapper.eq(FcFishOrder::getDate, DateUtil.parse(groundBoatOrderDTO.getDate()));
+        orderLambdaQueryWrapper.eq(FcFishOrder::getBoatId, fishBoat.getId());
+        Long count = fcFishOrderMapper.selectCount(orderLambdaQueryWrapper);
+        if (count > 0) {
+            throw new JeecgBootException("该日期此船只已被预约，请重新选择");
+        }
+        // 保存钓场船只预约数据
+        FcFishOrder fcFishOrder = new FcFishOrder();
+        fcFishOrder.setUserId(sysUser.getId());
+        fcFishOrder.setRealname(sysUser.getRealname());
+        fcFishOrder.setGroundId(fishGround.getId());
+        fcFishOrder.setGroundName(fishGround.getName());
+        fcFishOrder.setDate(DateUtil.parse(groundBoatOrderDTO.getDate()));
+        fcFishOrder.setBoatId(fishBoat.getId());
+        fcFishOrder.setBoatNumber(fishBoat.getBoatNumber());
+        fcFishOrder.setPhone(groundBoatOrderDTO.getPhone());
+        fcFishOrder.setFare(groundBoatOrderDTO.getFare());
+        // 预约状态 1:已预约 2:已取消预约
+        fcFishOrder.setStatus("1");
+        fcFishOrderMapper.insert(fcFishOrder);
+        return fcFishOrder.getId();
     }
 
 }

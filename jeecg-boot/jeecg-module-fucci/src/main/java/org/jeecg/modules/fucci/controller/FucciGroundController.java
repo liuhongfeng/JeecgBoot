@@ -4,14 +4,14 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.modules.fucci.pojo.dto.FucciGroundBoatOrderDTO;
 import org.jeecg.modules.fucci.pojo.vo.FucciGroundDetailsVO;
 import org.jeecg.modules.fucci.pojo.vo.FucciGroundOrderVO;
 import org.jeecg.modules.fucci.service.IFucciGroundService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author lhf
@@ -43,6 +43,13 @@ public class FucciGroundController {
     public Result<FucciGroundOrderVO> order(@RequestParam(name = "id") String id,
                                             @RequestParam(name = "date", required = false) String date) {
         return Result.ok(fucciGroundService.order(id, date));
+    }
+
+    @ApiOperation(value = "钓场船只确认预约接口")
+    @PostMapping("/order")
+    public Result<String> confirmOrder(HttpServletRequest request,
+                                       @RequestBody FucciGroundBoatOrderDTO groundBoatOrderDTO) {
+        return Result.ok(fucciGroundService.confirmOrder(request, groundBoatOrderDTO));
     }
 
 }
