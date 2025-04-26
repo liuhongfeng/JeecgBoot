@@ -7,16 +7,7 @@
           <a-col :lg="6">
             <a-form-item name="groundName">
               <template #label><span title="钓场名称">钓场名称</span></template>
-              <j-popup
-                placeholder="请选择钓场名称" 
-                v-model:value="queryParam.groundName" 
-                code="fc_fish_ground_report"
-                :fieldConfig="[
-                  { source: 'id', target: 'groundId' },
-                  { source: 'name', target: 'groundName' },
-                ]"
-                :multi="true"
-                :setFieldsValue="setFieldsValue" allow-clear />
+              <a-input placeholder="请输入钓场名称" v-model:value="queryParam.groundName" allow-clear ></a-input>
             </a-form-item>
           </a-col>
           <a-col :lg="6">
@@ -84,8 +75,6 @@
   import { downloadFile } from '/@/utils/common/renderUtils';
   import FcFishOrderModal from './components/FcFishOrderModal.vue'
   import { useUserStore } from '/@/store/modules/user';
-  import JDictSelectTag from '/@/components/Form/src/jeecg/components/JDictSelectTag.vue';
-  import JSelectMultiple from '/@/components/Form/src/jeecg/components/JSelectMultiple.vue';
   import JPopup from '/@/components/Form/src/jeecg/components/JPopup.vue';
   import { cloneDeep } from "lodash-es";
 

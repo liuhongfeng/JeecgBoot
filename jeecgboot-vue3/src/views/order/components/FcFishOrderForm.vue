@@ -14,23 +14,14 @@
 										{ source: 'id', target: 'userId' },
 										{ source: 'realname', target: 'realname' },
 									]"
-									:multi="true"
+									:multi="false"
 									:setFieldsValue="setFieldsValue"
 									 allow-clear />							</a-form-item>
 						</a-col>
 						<a-col :span="24">
 							<a-form-item label="钓场名称" v-bind="validateInfos.groundName" id="FcFishOrderForm-groundName" name="groundName">
-								<j-popup
-									placeholder="请选择钓场名称"
-									v-model:value="formData.groundName"
-									code="fc_fish_ground_report"
-									:fieldConfig="[
-										{ source: 'id', target: 'groundId' },
-										{ source: 'name', target: 'groundName' },
-									]"
-									:multi="true"
-									:setFieldsValue="setFieldsValue"
-									 allow-clear />							</a-form-item>
+								<a-input v-model:value="formData.groundName" placeholder="请输入钓场名称" disabled allow-clear ></a-input>
+							</a-form-item>
 						</a-col>
 						<a-col :span="24">
 							<a-form-item label="预约日期" v-bind="validateInfos.date" id="FcFishOrderForm-date" name="date">
@@ -44,10 +35,12 @@
 									v-model:value="formData.boatNumber"
 									code="fc_fish_boat_report"
 									:fieldConfig="[
-										{ source: 'id', target: 'boatId' },
+										{ source: 'id', target: 'groundId' },
+										{ source: 'name', target: 'groundName' },
+										{ source: 'boat_id', target: 'boatId' },
 										{ source: 'boat_number', target: 'boatNumber' },
 									]"
-									:multi="true"
+									:multi="false"
 									:setFieldsValue="setFieldsValue"
 									 allow-clear />							</a-form-item>
 						</a-col>

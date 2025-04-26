@@ -49,7 +49,7 @@ export const columns: BasicColumn[] = [
 // 高级查询数据
 export const superQuerySchema = {
   realname: {title: '预约用户昵称',order: 0,view: 'popup', type: 'string',code: 'fc_fish_user_report', orgFields: 'realname', destFields: 'realname', popupMulti: false,},
-  groundName: {title: '钓场名称',order: 1,view: 'popup', type: 'string',code: 'fc_fish_ground_report', orgFields: 'name', destFields: 'groundName', popupMulti: false,},
+  groundName: {title: '钓场名称',order: 1,view: 'text', type: 'string',},
   date: {title: '预约日期',order: 2,view: 'date', type: 'string',},
   boatNumber: {title: '船号',order: 3,view: 'popup', type: 'string',code: 'fc_fish_boat_report', orgFields: 'boat_number', destFields: 'boatNumber', popupMulti: false,},
   phone: {title: '预约用户手机号',order: 4,view: 'text', type: 'string',},
