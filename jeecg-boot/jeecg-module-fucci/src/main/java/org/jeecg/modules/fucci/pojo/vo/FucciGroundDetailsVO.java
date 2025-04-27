@@ -33,6 +33,12 @@ public class FucciGroundDetailsVO {
     private List<String> detailsImages;
 
     /**
+     * 钓场介绍
+     */
+    @ApiModelProperty(value = "钓场介绍")
+    private String introduce;
+
+    /**
      * 钓场地址
      */
     @ApiModelProperty(value = "钓场地址")
