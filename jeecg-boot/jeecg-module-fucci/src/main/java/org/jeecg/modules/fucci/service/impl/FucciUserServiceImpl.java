@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
@@ -155,11 +155,11 @@ public class FucciUserServiceImpl implements IFucciUserService {
         fucciUserVO.setAvatarUrl(sysUser.getAvatar());
         // TODO 以下字段暂时先给固定值，后续修改为动态查询
         fucciUserVO.setVip(true);
-        String startTimeStr = "2025-01-01 00:00:00";
-        String endTimeStr = "2025-12-31 00:00:00";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        fucciUserVO.setVipStartTime(LocalDateTime.parse(startTimeStr, formatter));
-        fucciUserVO.setVipEndTime(LocalDateTime.parse(endTimeStr, formatter));
+        String startTimeStr = "2025-01-01";
+        String endTimeStr = "2025-12-31";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        fucciUserVO.setVipStartTime(LocalDate.parse(startTimeStr, formatter));
+        fucciUserVO.setVipEndTime(LocalDate.parse(endTimeStr, formatter));
         fucciUserVO.setStaff(true);
         return fucciUserVO;
     }

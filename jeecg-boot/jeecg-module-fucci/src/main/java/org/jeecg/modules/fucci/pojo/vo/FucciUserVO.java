@@ -2,7 +2,7 @@ package org.jeecg.modules.fucci.pojo.vo;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 /**
  * 福羲用户信息
@@ -36,12 +36,12 @@ public class FucciUserVO {
     /**
      * VIP 开始时间
      */
-    private LocalDateTime vipStartTime;
+    private LocalDate vipStartTime;
 
     /**
      * VIP 结束时间
      */
-    private LocalDateTime vipEndTime;
+    private LocalDate vipEndTime;
 
     /**
      * 是否工作人员（true:是，false:否）
