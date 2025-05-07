@@ -40,4 +40,10 @@ public class FucciOrderController {
         return Result.ok(fucciOrderService.details(id));
     }
 
+    @ApiOperation(value = "工作人员-预约日期列表查询接口")
+    @GetMapping("/staff")
+    public Result<?> staffOrderDatelist(HttpServletRequest request) {
+        return Result.ok(fucciOrderService.staffOrderDateList(request));
+    }
+
 }

@@ -1,5 +1,6 @@
 package org.jeecg.modules.fucci.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.jeecg.modules.fucci.pojo.vo.FucciOrderVO;
 
@@ -29,5 +30,13 @@ public interface IFucciOrderService {
      * @return 预约完成详情信息
      */
     FucciOrderVO details(String id);
+
+    /**
+     * 工作人员-查询钓场预约日期列表数据
+     *
+     * @param request 请求信息
+     * @return 钓场预约日期列表数据
+     */
+    JSONObject staffOrderDateList(HttpServletRequest request);
 
 }

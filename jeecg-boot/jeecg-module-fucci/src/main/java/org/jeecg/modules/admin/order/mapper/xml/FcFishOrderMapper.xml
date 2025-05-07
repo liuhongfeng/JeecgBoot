@@ -67,4 +67,24 @@
             ffo.del_flag = 0 AND ffo.id = #{id}
     </select>
 
+    <select id="getOrderByGroundId" resultType="org.jeecg.modules.fucci.pojo.vo.FucciGroundStaffOrderDateVO">
+        SELECT
+            id,
+            user_id,
+            realname,
+            ground_id,
+            ground_name,
+            `date`,
+            boat_id,
+            boat_number,
+            phone
+        FROM
+            fc_fish_order
+        WHERE
+            del_flag = 0
+          AND ground_id = #{groundId}
+          AND `date` &gt;= CURDATE()
+        ORDER BY `date` DESC
+    </select>
+
 </mapper>

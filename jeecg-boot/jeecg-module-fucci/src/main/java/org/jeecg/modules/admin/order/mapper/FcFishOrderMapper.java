@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.jeecg.modules.admin.order.entity.FcFishOrder;
 import org.jeecg.modules.fucci.pojo.vo.FucciGroundBoatOrderVO;
 import org.jeecg.modules.fucci.pojo.vo.FucciGroundOrderDateVO;
+import org.jeecg.modules.fucci.pojo.vo.FucciGroundStaffOrderDateVO;
 import org.jeecg.modules.fucci.pojo.vo.FucciOrderVO;
 import org.springframework.stereotype.Repository;
 
@@ -54,5 +55,13 @@ public interface FcFishOrderMapper extends BaseMapper<FcFishOrder> {
      * @return 预约完成详情信息
      */
     FucciOrderVO getOrderById(String id);
+
+    /**
+     * 工作人员-查询钓场预约日期列表数据
+     *
+     * @param groundId 钓场id
+     * @return 钓场预约日期列表数据
+     */
+    List<FucciGroundStaffOrderDateVO> getOrderByGroundId(String groundId);
 
 }
