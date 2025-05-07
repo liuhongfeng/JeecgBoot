@@ -14,6 +14,8 @@ import org.jeecg.modules.admin.ground.service.IFcFishBoatService;
 import org.jeecg.modules.admin.ground.service.IFcFishGroundService;
 import org.jeecg.modules.admin.order.entity.FcFishOrder;
 import org.jeecg.modules.admin.order.mapper.FcFishOrderMapper;
+import org.jeecg.modules.admin.vip.entity.FcFishVip;
+import org.jeecg.modules.admin.vip.service.IFcFishVipService;
 import org.jeecg.modules.fucci.common.constant.FucciConstant;
 import org.jeecg.modules.fucci.config.FucciProperties;
 import org.jeecg.modules.fucci.pojo.dto.FucciGroundBoatOrderDTO;
@@ -44,6 +46,7 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
     private final ISysUserService sysUserService;
     private final IFcFishGroundService fcFishGroundService;
     private final IFcFishBoatService fcFishBoatService;
+    private final IFcFishVipService fcFishVipService;
     private final FcFishOrderMapper fcFishOrderMapper;
     private final FucciProperties fucciProperties;
 
@@ -70,7 +73,16 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
     }
 
     @Override
-    public FucciGroundDetailsVO details(String id) {
+    public FucciGroundDetailsVO details(HttpServletRequest request, String id) {
+        // 查询用户信息
+        SysUser sysUser = null;
+        String accessToken = request.getHeader("X-Access-Token");
+        if (StringUtils.isNotEmpty(accessToken)) {
+            String username = JwtUtil.getUserNameByToken(request);
+            LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(SysUser::getUsername, username);
+            sysUser = sysUserService.getOne(queryWrapper);
+        }
         // 环境访问地址
         String path = fucciProperties.getPath();
         FcFishGround fcFishGround = fcFishGroundService.getById(id);
@@ -84,18 +96,40 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
             detailsImages.replaceAll(image -> path + FucciConstant.STATIC_PATH + image);
         }
         fucciGroundDetailsVO.setDetailsImages(detailsImages);
-        // TODO 是否 VIP，暂时写固定值，后续根据用户查询
-        fucciGroundDetailsVO.setVip(true);
+        fucciGroundDetailsVO.setVip(false);
+        if (null != sysUser) {
+            // 查询用户是否为 VIP 会员用户（且没有超过会员结束时间）
+            LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
+            vipQueryWrapper.eq(FcFishVip::getUserId, sysUser.getId());
+            FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
+            if (fcFishVip != null && fcFishVip.getEndTime().after(DateUtil.date())) {
+                fucciGroundDetailsVO.setVip(true);
+            }
+        }
         return fucciGroundDetailsVO;
     }
 
     @Override
-    public FucciGroundOrderVO order(String id, String date) {
+    public FucciGroundOrderVO order(HttpServletRequest request, String id, String date) {
+        // 查询用户信息
+        String username = JwtUtil.getUserNameByToken(request);
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysUser::getUsername, username);
+        SysUser sysUser = sysUserService.getOne(queryWrapper);
+        // 钓场船只预约信息
         FucciGroundOrderVO fucciGroundOrderVO = new FucciGroundOrderVO();
         FcFishGround fcFishGround = fcFishGroundService.getById(id);
         BeanUtils.copyProperties(fcFishGround, fucciGroundOrderVO);
-        // TODO 是否 VIP，暂时写固定值，后续根据用户查询
-        fucciGroundOrderVO.setVip(true);
+        fucciGroundOrderVO.setVip(false);
+        if (null != sysUser) {
+            // 查询用户是否为 VIP 会员用户（且没有超过会员结束时间）
+            LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
+            vipQueryWrapper.eq(FcFishVip::getUserId, sysUser.getId());
+            FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
+            if (fcFishVip != null && fcFishVip.getEndTime().after(DateUtil.date())) {
+                fucciGroundOrderVO.setVip(true);
+            }
+        }
         // 查询钓场未来 30 天钓场船只预约数据，将按日期分组后的数据转成 Map
         List<FucciGroundOrderDateVO> groundOrderDateList = fcFishOrderMapper.queryGroundOrderDateList(id);
         Map<String, Integer> groundOrderDateMap = groundOrderDateList.stream()
@@ -128,6 +162,16 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysUser::getUsername, username);
         SysUser sysUser = sysUserService.getOne(queryWrapper);
+        // 查询用户是否为 VIP 会员用户（且没有超过会员结束时间）
+        boolean vip = false;
+        if (null != sysUser) {
+            LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
+            vipQueryWrapper.eq(FcFishVip::getUserId, sysUser.getId());
+            FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
+            if (fcFishVip != null && fcFishVip.getEndTime().after(DateUtil.date())) {
+                vip = true;
+            }
+        }
         // 2. 检查船只数据状态
         FcFishBoat fishBoat = fcFishBoatService.getById(groundBoatOrderDTO.getBoatId());
         if (null == fishBoat) {
@@ -138,9 +182,17 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         if (null == fishGround) {
             throw new JeecgBootException("钓场不存在");
         }
-        // 4. 检查票价是否正确 TODO 检查用户是否 vip 用户
-        if (!Objects.equals(groundBoatOrderDTO.getFare(), fishGround.getPrice())) {
-            throw new JeecgBootException("票价有误，请重新进入此页面预约");
+        // 4. 检查票价是否正确
+        if (vip) {
+            // 匹配 VIP 价格
+            if (!Objects.equals(groundBoatOrderDTO.getFare(), fishGround.getVipPrice())) {
+                throw new JeecgBootException("票价有误，请重新进入此页面预约");
+            }
+        } else {
+            // 匹配普通价格
+            if (!Objects.equals(groundBoatOrderDTO.getFare(), fishGround.getPrice())) {
+                throw new JeecgBootException("票价有误，请重新进入此页面预约");
+            }
         }
         // 5. 检查船只是否已被预约
         LambdaQueryWrapper<FcFishOrder> orderLambdaQueryWrapper = new LambdaQueryWrapper<>();

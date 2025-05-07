@@ -34,15 +34,17 @@ public class FucciGroundController {
 
     @ApiOperation(value = "钓场信息详情接口")
     @GetMapping("/details")
-    public Result<FucciGroundDetailsVO> details(@RequestParam(name = "id") String id) {
-        return Result.ok(fucciGroundService.details(id));
+    public Result<FucciGroundDetailsVO> details(HttpServletRequest request,
+                                                @RequestParam(name = "id") String id) {
+        return Result.ok(fucciGroundService.details(request, id));
     }
 
     @ApiOperation(value = "钓场船只预约信息查询接口")
     @GetMapping("/order")
-    public Result<FucciGroundOrderVO> order(@RequestParam(name = "id") String id,
+    public Result<FucciGroundOrderVO> order(HttpServletRequest request,
+                                            @RequestParam(name = "id") String id,
                                             @RequestParam(name = "date", required = false) String date) {
-        return Result.ok(fucciGroundService.order(id, date));
+        return Result.ok(fucciGroundService.order(request, id, date));
     }
 
     @ApiOperation(value = "钓场船只确认预约接口")

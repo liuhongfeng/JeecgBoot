@@ -24,19 +24,21 @@ public interface IFucciGroundService {
     /**
      * 查询钓场详情信息
      *
-     * @param id 钓场id
+     * @param request 请求信息
+     * @param id      钓场id
      * @return 钓场详情信息
      */
-    FucciGroundDetailsVO details(String id);
+    FucciGroundDetailsVO details(HttpServletRequest request, String id);
 
     /**
      * 查询钓场船只预约信息
      *
-     * @param id   钓场id
-     * @param date 预约日期
+     * @param request 请求信息
+     * @param id      钓场id
+     * @param date    预约日期
      * @return 钓场船只预约信息
      */
-    FucciGroundOrderVO order(String id, String date);
+    FucciGroundOrderVO order(HttpServletRequest request, String id, String date);
 
     /**
      * 钓场船只确认预约处理

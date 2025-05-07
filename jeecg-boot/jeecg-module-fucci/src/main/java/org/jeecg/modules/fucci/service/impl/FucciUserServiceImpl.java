@@ -3,6 +3,7 @@ package org.jeecg.modules.fucci.service.impl;
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
 import cn.binarywang.wx.miniapp.util.WxMaConfigHolder;
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,10 @@ import org.jeecg.common.system.util.JwtUtil;
 import org.jeecg.common.util.PasswordUtil;
 import org.jeecg.common.util.RedisUtil;
 import org.jeecg.common.util.oConvertUtils;
+import org.jeecg.modules.admin.staff.entity.FcFishStaff;
+import org.jeecg.modules.admin.staff.service.IFcFishStaffService;
+import org.jeecg.modules.admin.vip.entity.FcFishVip;
+import org.jeecg.modules.admin.vip.service.IFcFishVipService;
 import org.jeecg.modules.fucci.common.constant.FucciConstant;
 import org.jeecg.modules.fucci.common.util.UserIdGenerator;
 import org.jeecg.modules.fucci.pojo.dto.FucciUserDTO;
@@ -27,8 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 @Slf4j
@@ -39,6 +42,8 @@ public class FucciUserServiceImpl implements IFucciUserService {
     private final RedisUtil redisUtil;
     private final WxMaService wxMaService;
     private final ISysUserService sysUserService;
+    private final IFcFishVipService fcFishVipService;
+    private final IFcFishStaffService fcFishStaffService;
 
     @Override
     public JSONObject login(FucciUserLoginDTO fucciUserLoginDTO) {
@@ -148,19 +153,29 @@ public class FucciUserServiceImpl implements IFucciUserService {
      * @param sysUser 系统用户信息
      * @return 福羲路亚用户信息
      */
-    private static FucciUserVO getFucciUserVO(SysUser sysUser) {
+    private FucciUserVO getFucciUserVO(SysUser sysUser) {
         FucciUserVO fucciUserVO = new FucciUserVO();
         fucciUserVO.setUserId(sysUser.getUsername());
         fucciUserVO.setNickname(sysUser.getRealname());
         fucciUserVO.setAvatarUrl(sysUser.getAvatar());
-        // TODO 以下字段暂时先给固定值，后续修改为动态查询
-        fucciUserVO.setVip(true);
-        String startTimeStr = "2025-01-01";
-        String endTimeStr = "2025-12-31";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        fucciUserVO.setVipStartTime(LocalDate.parse(startTimeStr, formatter));
-        fucciUserVO.setVipEndTime(LocalDate.parse(endTimeStr, formatter));
-        fucciUserVO.setStaff(true);
+        fucciUserVO.setVip(false);
+        fucciUserVO.setStaff(false);
+        // 查询用户是否为 VIP 会员用户（且没有超过会员结束时间）
+        LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
+        vipQueryWrapper.eq(FcFishVip::getUserId, sysUser.getId());
+        FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
+        if (fcFishVip != null && fcFishVip.getEndTime().after(DateUtil.date())) {
+            fucciUserVO.setVip(true);
+            fucciUserVO.setVipStartTime(fcFishVip.getStartTime());
+            fucciUserVO.setVipEndTime(fcFishVip.getEndTime());
+        }
+        // 查询用户是否为工作人员（工作人员只能服务一个钓场）
+        LambdaQueryWrapper<FcFishStaff> staffQueryWrapper = new LambdaQueryWrapper<>();
+        staffQueryWrapper.eq(FcFishStaff::getUserId, sysUser.getId());
+        FcFishStaff fcFishStaff = fcFishStaffService.getOne(staffQueryWrapper);
+        if (fcFishStaff != null) {
+            fucciUserVO.setStaff(true);
+        }
         return fucciUserVO;
     }
 
