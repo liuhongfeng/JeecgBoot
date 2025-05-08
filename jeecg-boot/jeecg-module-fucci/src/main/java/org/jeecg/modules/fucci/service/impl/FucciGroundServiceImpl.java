@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.util.JwtUtil;
 import org.jeecg.modules.admin.ground.entity.FcFishBoat;
@@ -76,7 +77,7 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
     public FucciGroundDetailsVO details(HttpServletRequest request, String id) {
         // 查询用户信息
         SysUser sysUser = null;
-        String accessToken = request.getHeader("X-Access-Token");
+        String accessToken = request.getHeader(CommonConstant.X_ACCESS_TOKEN);
         if (StringUtils.isNotEmpty(accessToken)) {
             String username = JwtUtil.getUserNameByToken(request);
             LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
