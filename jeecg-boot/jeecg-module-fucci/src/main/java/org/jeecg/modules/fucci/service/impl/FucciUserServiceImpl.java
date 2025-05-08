@@ -179,4 +179,24 @@ public class FucciUserServiceImpl implements IFucciUserService {
         return fucciUserVO;
     }
 
+    @Override
+    public String logout(HttpServletRequest request) {
+        // 用户退出逻辑
+        String token = request.getHeader(CommonConstant.X_ACCESS_TOKEN);
+        if (oConvertUtils.isEmpty(token)) {
+            throw new JeecgBootException("Token 为空，登出失败！");
+        }
+        String username = JwtUtil.getUsername(token);
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysUser::getUsername, username);
+        SysUser sysUser = sysUserService.getOne(queryWrapper);
+        if (sysUser == null) {
+            throw new JeecgBootException("Token 无效，登出失败！");
+        }
+        // 清除用户登录 Token 缓存
+        redisUtil.del(CommonConstant.PREFIX_USER_TOKEN + token);
+        log.info("用户名：" + sysUser.getRealname() + "，登出成功！");
+        return "登出成功！";
+    }
+
 }

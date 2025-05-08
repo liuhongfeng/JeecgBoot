@@ -33,4 +33,12 @@ public interface IFucciUserService {
      */
     JSONObject updateUserInfo(HttpServletRequest request, FucciUserDTO fucciUserDTO);
 
+    /**
+     * 微信小程序用户登出接口
+     *
+     * @param request 请求信息
+     * @return 微信小程序用户登出结果
+     */
+    String logout(HttpServletRequest request);
+
 }
