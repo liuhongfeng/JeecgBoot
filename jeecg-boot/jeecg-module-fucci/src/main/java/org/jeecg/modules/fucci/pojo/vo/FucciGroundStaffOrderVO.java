@@ -23,6 +23,11 @@ public class FucciGroundStaffOrderVO {
     private Date orderDate;
 
     /**
+     * 该日期下的预约数量
+     */
+    private Integer orderCount;
+
+    /**
      * 该日期下的预约列表信息
      */
     @ApiModelProperty(value = "该日期下的预约列表信息")

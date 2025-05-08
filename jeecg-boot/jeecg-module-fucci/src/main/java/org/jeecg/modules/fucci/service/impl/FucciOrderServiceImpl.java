@@ -84,6 +84,7 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
             groundStaffOrderVOList = groundStaffOrderDateMap.entrySet().stream().map(entry -> {
                 FucciGroundStaffOrderVO groundStaffOrderVO = new FucciGroundStaffOrderVO();
                 groundStaffOrderVO.setOrderDate(entry.getKey());
+                groundStaffOrderVO.setOrderCount(entry.getValue().size());
                 groundStaffOrderVO.setOrderDateList(entry.getValue());
                 return groundStaffOrderVO;
             }).sorted((o1, o2) -> o2.getOrderDate().compareTo(o1.getOrderDate())).collect(Collectors.toList());
