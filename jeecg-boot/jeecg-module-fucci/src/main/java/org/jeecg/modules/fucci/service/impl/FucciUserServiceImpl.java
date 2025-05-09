@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.apache.commons.lang3.StringUtils;
+import org.jeecg.common.constant.CacheConstant;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.util.JwtUtil;
@@ -195,6 +196,8 @@ public class FucciUserServiceImpl implements IFucciUserService {
         }
         // 清除用户登录 Token 缓存
         redisUtil.del(CommonConstant.PREFIX_USER_TOKEN + token);
+        // 清空用户的缓存信息
+        redisUtil.del(String.format("%s::%s", CacheConstant.SYS_USERS_CACHE, sysUser.getUsername()));
         log.info("用户名：" + sysUser.getRealname() + "，登出成功！");
         return "登出成功！";
     }
