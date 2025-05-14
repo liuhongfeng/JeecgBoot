@@ -113,6 +113,21 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
             log.info("微信支付================查询订单结果：{}", JSONObject.toJSONString(wxPayOrderQueryV3Result));
             if (null != wxPayOrderQueryV3Result) {
                 BeanUtils.copyProperties(wxPayOrderQueryV3Result, orderPayResultVO);
+                // 订单状态为 SUCCESS，表示支付成功
+                if (WxPayConstants.WxpayTradeStatus.SUCCESS.equals(wxPayOrderQueryV3Result.getTradeState())) {
+                    // 查询是否存在「预约状态为 3:已预约（订单待支付）」的预约订单数据
+                    LambdaQueryWrapper<FcFishOrder> orderLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                    orderLambdaQueryWrapper.eq(FcFishOrder::getId, wxPayOrderQueryV3Result.getOutTradeNo());
+                    orderLambdaQueryWrapper.eq(FcFishOrder::getStatus, "3");
+                    FcFishOrder dbOrder = fcFishOrderMapper.selectOne(orderLambdaQueryWrapper);
+                    if (null != dbOrder) {
+                        // 更新预约订单状态为 1:已预约（支付完成）
+                        FcFishOrder order = new FcFishOrder();
+                        order.setId(wxPayOrderQueryV3Result.getOutTradeNo());
+                        order.setStatus("1");
+                        fcFishOrderMapper.updateById(order);
+                    }
+                }
             }
         } catch (WxPayException e) {
             throw new RuntimeException(e);
@@ -129,11 +144,18 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
             log.info("微信支付================支付成功回调通知结果：{}", JSONObject.toJSONString(decryptRes));
             if (WxPayConstants.WxpayTradeStatus.SUCCESS.equals(decryptRes.getTradeState())) {
                 log.info("微信支付================支付成功回调通知结果====商户订单号：{}", decryptRes.getOutTradeNo());
-                // 更新预约订单状态
-                FcFishOrder order = new FcFishOrder();
-                order.setId(decryptRes.getOutTradeNo());
-                order.setStatus("1");
-                fcFishOrderMapper.updateById(order);
+                // 查询是否存在「预约状态为 3:已预约（订单待支付）」的预约订单数据
+                LambdaQueryWrapper<FcFishOrder> orderLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                orderLambdaQueryWrapper.eq(FcFishOrder::getId, decryptRes.getOutTradeNo());
+                orderLambdaQueryWrapper.eq(FcFishOrder::getStatus, "3");
+                FcFishOrder dbOrder = fcFishOrderMapper.selectOne(orderLambdaQueryWrapper);
+                if (null != dbOrder) {
+                    // 更新预约订单状态为 1:已预约（支付完成）
+                    FcFishOrder order = new FcFishOrder();
+                    order.setId(decryptRes.getOutTradeNo());
+                    order.setStatus("1");
+                    fcFishOrderMapper.updateById(order);
+                }
                 // 成功返回200/204，body 无需有内容
                 return ResponseEntity.status(200).body("");
             } else {
