@@ -49,7 +49,7 @@ public class FucciGroundController {
 
     @ApiOperation(value = "钓场船只确认预约接口")
     @PostMapping("/order")
-    public Result<String> confirmOrder(HttpServletRequest request,
+    public Result<?> confirmOrder(HttpServletRequest request,
                                        @RequestBody FucciGroundBoatOrderDTO groundBoatOrderDTO) {
         return Result.ok(fucciGroundService.confirmOrder(request, groundBoatOrderDTO));
     }

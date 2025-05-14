@@ -4,20 +4,31 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.RequiredArgsConstructor;
+import com.github.binarywang.wxpay.bean.notify.SignatureHeader;
+import com.github.binarywang.wxpay.bean.notify.WxPayNotifyV3Response;
+import com.github.binarywang.wxpay.bean.notify.WxPayNotifyV3Result;
+import com.github.binarywang.wxpay.bean.notify.WxPayRefundNotifyV3Result;
+import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryV3Result;
+import com.github.binarywang.wxpay.constant.WxPayConstants;
+import com.github.binarywang.wxpay.exception.WxPayException;
+import com.github.binarywang.wxpay.service.WxPayService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.util.JwtUtil;
+import org.jeecg.modules.admin.order.entity.FcFishOrder;
 import org.jeecg.modules.admin.order.mapper.FcFishOrderMapper;
 import org.jeecg.modules.admin.staff.entity.FcFishStaff;
 import org.jeecg.modules.admin.staff.service.IFcFishStaffService;
 import org.jeecg.modules.fucci.pojo.vo.FucciGroundStaffOrderDateVO;
 import org.jeecg.modules.fucci.pojo.vo.FucciGroundStaffOrderVO;
+import org.jeecg.modules.fucci.pojo.vo.FucciOrderPayResultVO;
 import org.jeecg.modules.fucci.pojo.vo.FucciOrderVO;
 import org.jeecg.modules.fucci.service.IFucciOrderService;
 import org.jeecg.modules.system.entity.SysUser;
 import org.jeecg.modules.system.service.ISysUserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeanUtils;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,12 +45,13 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor
 public class FucciOrderServiceImpl implements IFucciOrderService {
 
-    private final ISysUserService sysUserService;
-    private final IFcFishStaffService fcFishStaffService;
-    private final FcFishOrderMapper fcFishOrderMapper;
+    private ISysUserService sysUserService;
+    private IFcFishStaffService fcFishStaffService;
+    private FcFishOrderMapper fcFishOrderMapper;
+    private WxPayService wxService;
 
     @Override
     public IPage<FucciOrderVO> list(HttpServletRequest request, Integer pageNo, Integer pageSize) {
@@ -91,6 +103,86 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
         }
         jsonObject.put("records", groundStaffOrderVOList);
         return jsonObject;
+    }
+
+    @Override
+    public FucciOrderPayResultVO payTransactions(HttpServletRequest request, String outTradeNo) {
+        FucciOrderPayResultVO orderPayResultVO = new FucciOrderPayResultVO();
+        try {
+            WxPayOrderQueryV3Result wxPayOrderQueryV3Result = wxService.queryOrderV3(null, outTradeNo);
+            log.info("微信支付================查询订单结果：{}", JSONObject.toJSONString(wxPayOrderQueryV3Result));
+            if (null != wxPayOrderQueryV3Result) {
+                BeanUtils.copyProperties(wxPayOrderQueryV3Result, orderPayResultVO);
+            }
+        } catch (WxPayException e) {
+            throw new RuntimeException(e);
+        }
+        return orderPayResultVO;
+    }
+
+    @Override
+    public ResponseEntity<String> payNotifySuccess(HttpServletRequest request, String notifyData) {
+        SignatureHeader header = getRequestHeader(request);
+        try {
+            WxPayNotifyV3Result res = wxService.parseOrderNotifyV3Result(notifyData, header);
+            WxPayNotifyV3Result.DecryptNotifyResult decryptRes = res.getResult();
+            log.info("微信支付================支付成功回调通知结果：{}", JSONObject.toJSONString(decryptRes));
+            if (WxPayConstants.WxpayTradeStatus.SUCCESS.equals(decryptRes.getTradeState())) {
+                log.info("微信支付================支付成功回调通知结果====商户订单号：{}", decryptRes.getOutTradeNo());
+                // 更新预约订单状态
+                FcFishOrder order = new FcFishOrder();
+                order.setId(decryptRes.getOutTradeNo());
+                order.setStatus("1");
+                fcFishOrderMapper.updateById(order);
+                // 成功返回200/204，body 无需有内容
+                return ResponseEntity.status(200).body("");
+            } else {
+                // 失败返回4xx或5xx，且需要构造body信息
+                return ResponseEntity.status(500).body(WxPayNotifyV3Response.fail("错误原因"));
+            }
+        } catch (WxPayException e) {
+            // 失败返回4xx或5xx，且需要构造body信息
+            return ResponseEntity.status(500).body(WxPayNotifyV3Response.fail("错误原因"));
+        }
+    }
+
+    @Override
+    public ResponseEntity<String> payNotifyRefund(HttpServletRequest request, String notifyData) {
+        SignatureHeader header = getRequestHeader(request);
+        try {
+            WxPayRefundNotifyV3Result res = wxService.parseRefundNotifyV3Result(notifyData, header);
+            WxPayRefundNotifyV3Result.DecryptNotifyResult decryptRes = res.getResult();
+            if (WxPayConstants.RefundStatus.SUCCESS.equals(decryptRes.getRefundStatus())) {
+                // 成功返回200/204，body无需有内容
+                return ResponseEntity.status(200).body("");
+            } else {
+                // 失败返回4xx或5xx，且需要构造body信息
+                return ResponseEntity.status(500).body(WxPayNotifyV3Response.fail("错误原因"));
+            }
+        } catch (WxPayException e) {
+            // 失败返回4xx或5xx，且需要构造body信息
+            return ResponseEntity.status(500).body(WxPayNotifyV3Response.fail("错误原因"));
+        }
+    }
+
+    /**
+     * 组装请求头的签名信息
+     *
+     * @param request 请求信息
+     * @return 请求头的签名信息
+     */
+    private SignatureHeader getRequestHeader(HttpServletRequest request) {
+        // 获取通知签名
+        String signature = request.getHeader("Wechatpay-Signature");
+        String nonce = request.getHeader("Wechatpay-Nonce");
+        String serial = request.getHeader("Wechatpay-Serial");
+        String timestamp = request.getHeader("Wechatpay-Timestamp");
+        SignatureHeader signatureHeader = new SignatureHeader();
+        signatureHeader.setSignature(signature);
+        signatureHeader.setNonce(nonce);
+        signatureHeader.setSerial(serial);
+        signatureHeader.setTimeStamp(timestamp);
+        return signatureHeader;
     }
 
 }

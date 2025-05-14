@@ -9,7 +9,7 @@
         FROM fc_fish_order
         WHERE ground_id = #{groundId}
         AND del_flag = 0
-        AND status = 1
+        AND status in ('1', '3')
         AND `date` &gt;= CURDATE()
         AND `date` &lt; CURDATE() + INTERVAL 30 DAY
         GROUP BY DATE_FORMAT(`date`, '%Y-%m-%d')
@@ -29,6 +29,7 @@
             fc_fish_boat ffb
             LEFT JOIN fc_fish_order ffo ON ffo.boat_id = ffb.id
             AND ffo.del_flag = 0
+            AND ffo.status in ('1', '3')
             AND DATE_FORMAT( ffo.`date`, '%Y-%m-%d' ) = #{orderDate}
         WHERE
             ffb.ground_id = #{groundId}
@@ -47,6 +48,7 @@
             fc_fish_order
         WHERE
             del_flag = 0
+            AND status = '1'
             AND user_id = #{userId}
         ORDER BY `date` DESC
     </select>
@@ -64,7 +66,9 @@
             fc_fish_order ffo
             LEFT JOIN fc_fish_ground ffg ON ffg.id = ffo.ground_id AND ffg.del_flag = 0
         WHERE
-            ffo.del_flag = 0 AND ffo.id = #{id}
+            ffo.del_flag = 0
+            AND ffo.status = '1'
+            AND ffo.id = #{id}
     </select>
 
     <select id="getOrderByGroundId" resultType="org.jeecg.modules.fucci.pojo.vo.FucciGroundStaffOrderDateVO">
@@ -82,6 +86,7 @@
             fc_fish_order
         WHERE
             del_flag = 0
+          AND status = '1'
           AND ground_id = #{groundId}
           AND `date` &gt;= CURDATE()
         ORDER BY `date` DESC

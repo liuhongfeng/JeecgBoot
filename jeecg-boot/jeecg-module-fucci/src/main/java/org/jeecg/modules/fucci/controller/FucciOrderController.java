@@ -6,10 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.modules.fucci.service.IFucciOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -44,6 +42,24 @@ public class FucciOrderController {
     @GetMapping("/staff")
     public Result<?> staffOrderDatelist(HttpServletRequest request) {
         return Result.ok(fucciOrderService.staffOrderDateList(request));
+    }
+
+    @ApiOperation(value = "微信支付-按商户订单号查询订单接口")
+    @GetMapping("/pay/transactions/{outTradeNo}")
+    public Result<?> payTransactions(HttpServletRequest request, @PathVariable String outTradeNo) {
+        return Result.ok(fucciOrderService.payTransactions(request, outTradeNo));
+    }
+
+    @ApiOperation(value = "微信支付-支付成功回调通知接口")
+    @PostMapping("/pay/notify/success")
+    public ResponseEntity<String> payNotifySuccess(HttpServletRequest request, @RequestBody String notifyData) {
+        return fucciOrderService.payNotifySuccess(request, notifyData);
+    }
+
+    @ApiOperation(value = "微信支付-退款结果回调通知接口")
+    @PostMapping("/pay/notify/refund")
+    public ResponseEntity<String> payNotifyRefund(HttpServletRequest request, @RequestBody String notifyData) {
+        return fucciOrderService.payNotifyRefund(request, notifyData);
     }
 
 }

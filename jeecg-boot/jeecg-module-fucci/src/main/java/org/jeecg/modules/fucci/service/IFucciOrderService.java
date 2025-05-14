@@ -2,7 +2,9 @@ package org.jeecg.modules.fucci.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.jeecg.modules.fucci.pojo.vo.FucciOrderPayResultVO;
 import org.jeecg.modules.fucci.pojo.vo.FucciOrderVO;
+import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -38,5 +40,11 @@ public interface IFucciOrderService {
      * @return 钓场预约日期列表数据
      */
     JSONObject staffOrderDateList(HttpServletRequest request);
+
+    FucciOrderPayResultVO payTransactions(HttpServletRequest request, String outTradeNo);
+
+    ResponseEntity<String> payNotifySuccess(HttpServletRequest request, String notifyData);
+
+    ResponseEntity<String> payNotifyRefund(HttpServletRequest request, String notifyData);
 
 }

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.jeecg.modules.fucci.pojo.dto.FucciGroundBoatOrderDTO;
 import org.jeecg.modules.fucci.pojo.vo.FucciGroundDetailsVO;
 import org.jeecg.modules.fucci.pojo.vo.FucciGroundOrderVO;
+import org.jeecg.modules.fucci.pojo.vo.FucciOrderPayVO;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -45,8 +46,8 @@ public interface IFucciGroundService {
      *
      * @param request            请求信息
      * @param groundBoatOrderDTO 确认预约 DTO
-     * @return 预约id
+     * @return 钓场船只预约下单返参数据
      */
-    String confirmOrder(HttpServletRequest request, FucciGroundBoatOrderDTO groundBoatOrderDTO);
+    FucciOrderPayVO confirmOrder(HttpServletRequest request, FucciGroundBoatOrderDTO groundBoatOrderDTO);
 
 }

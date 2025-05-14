@@ -29,7 +29,7 @@ public class FucciGroundBoatOrderVO {
     /**
      * 状态
      */
-    @ApiModelProperty(value = "状态")
+    @ApiModelProperty(value = "状态（1:可用 2:不可用）")
     @JsonIgnore
     private String status;
 

@@ -1,9 +1,16 @@
 package org.jeecg.modules.fucci.service.impl;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import lombok.RequiredArgsConstructor;
+import com.github.binarywang.wxpay.bean.request.BaseWxPayRequest;
+import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderV3Request;
+import com.github.binarywang.wxpay.bean.result.WxPayUnifiedOrderV3Result;
+import com.github.binarywang.wxpay.bean.result.enums.TradeTypeEnum;
+import com.github.binarywang.wxpay.exception.WxPayException;
+import com.github.binarywang.wxpay.service.WxPayService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jeecg.common.constant.CommonConstant;
@@ -24,12 +31,17 @@ import org.jeecg.modules.fucci.pojo.vo.*;
 import org.jeecg.modules.fucci.service.IFucciGroundService;
 import org.jeecg.modules.system.entity.SysUser;
 import org.jeecg.modules.system.service.ISysUserService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -41,15 +53,16 @@ import java.util.stream.IntStream;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor
 public class FucciGroundServiceImpl implements IFucciGroundService {
 
-    private final ISysUserService sysUserService;
-    private final IFcFishGroundService fcFishGroundService;
-    private final IFcFishBoatService fcFishBoatService;
-    private final IFcFishVipService fcFishVipService;
-    private final FcFishOrderMapper fcFishOrderMapper;
-    private final FucciProperties fucciProperties;
+    private ISysUserService sysUserService;
+    private IFcFishGroundService fcFishGroundService;
+    private IFcFishBoatService fcFishBoatService;
+    private IFcFishVipService fcFishVipService;
+    private FcFishOrderMapper fcFishOrderMapper;
+    private FucciProperties fucciProperties;
+    private WxPayService wxService;
 
     @Override
     public JSONObject list() {
@@ -157,7 +170,8 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
     }
 
     @Override
-    public String confirmOrder(HttpServletRequest request, FucciGroundBoatOrderDTO groundBoatOrderDTO) {
+    @Transactional(rollbackFor = Exception.class)
+    public FucciOrderPayVO confirmOrder(HttpServletRequest request, FucciGroundBoatOrderDTO groundBoatOrderDTO) {
         // 1. 查询用户信息
         String username = JwtUtil.getUserNameByToken(request);
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
@@ -186,26 +200,40 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         // 4. 检查票价是否正确
         if (vip) {
             // 匹配 VIP 价格
-            if (!Objects.equals(groundBoatOrderDTO.getFare(), fishGround.getVipPrice())) {
+            if (groundBoatOrderDTO.getFare().compareTo(fishGround.getVipPrice()) != 0) {
                 throw new JeecgBootException("票价有误，请重新进入此页面预约");
             }
         } else {
             // 匹配普通价格
-            if (!Objects.equals(groundBoatOrderDTO.getFare(), fishGround.getPrice())) {
+            if (groundBoatOrderDTO.getFare().compareTo(fishGround.getPrice()) != 0) {
                 throw new JeecgBootException("票价有误，请重新进入此页面预约");
             }
         }
-        // 5. 检查船只是否已被预约
+        // 5. 检查船只是否已被预约，查询预约状态为：1:已预约（支付完成） 3:已预约（订单待支付）的数据
         LambdaQueryWrapper<FcFishOrder> orderLambdaQueryWrapper = new LambdaQueryWrapper<>();
         orderLambdaQueryWrapper.eq(FcFishOrder::getGroundId, fishGround.getId());
         orderLambdaQueryWrapper.eq(FcFishOrder::getDate, DateUtil.parse(groundBoatOrderDTO.getDate()));
         orderLambdaQueryWrapper.eq(FcFishOrder::getBoatId, fishBoat.getId());
+        orderLambdaQueryWrapper.in(FcFishOrder::getStatus, "1", "3");
         Long count = fcFishOrderMapper.selectCount(orderLambdaQueryWrapper);
         if (count > 0) {
             throw new JeecgBootException("该日期此船只已被预约，请重新选择");
         }
+        // 预约订单ID（雪花算法生成）也用做微信支付的「商户订单号」
+        String snowflakeId = String.valueOf(IdUtil.getSnowflake(1, 1).nextId());
+        log.info("微信支付================预约订单ID：{}", snowflakeId);
+        // 调用微信支付-小程序下单接口
+        WxPayUnifiedOrderV3Request orderV3Request = getWxPayUnifiedOrderV3Request(snowflakeId, groundBoatOrderDTO.getFare(), sysUser.getThirdId());
+        WxPayUnifiedOrderV3Result.JsapiResult result;
+        try {
+            result = wxService.createOrderV3(TradeTypeEnum.JSAPI, orderV3Request);
+            log.info("微信支付================预约订单下单结果：{}", JSONObject.toJSONString(result));
+        } catch (WxPayException e) {
+            throw new RuntimeException(e);
+        }
         // 保存钓场船只预约数据
         FcFishOrder fcFishOrder = new FcFishOrder();
+        fcFishOrder.setId(snowflakeId);
         fcFishOrder.setUserId(sysUser.getId());
         fcFishOrder.setRealname(sysUser.getRealname());
         fcFishOrder.setGroundId(fishGround.getId());
@@ -215,10 +243,39 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         fcFishOrder.setBoatNumber(fishBoat.getBoatNumber());
         fcFishOrder.setPhone(groundBoatOrderDTO.getPhone());
         fcFishOrder.setFare(groundBoatOrderDTO.getFare());
-        // 预约状态 1:已预约 2:已取消预约
-        fcFishOrder.setStatus("1");
+        // 预约状态 1:已预约（支付完成） 2:已取消预约（已退款） 3:已预约（订单待支付） 4:已取消预约（未支付，关闭订单）
+        fcFishOrder.setStatus("3");
         fcFishOrderMapper.insert(fcFishOrder);
-        return fcFishOrder.getId();
+        // 钓场船只预约下单返参数据
+        FucciOrderPayVO orderPayVO = new FucciOrderPayVO();
+        orderPayVO.setOrderId(snowflakeId);
+        BeanUtils.copyProperties(result, orderPayVO);
+        return orderPayVO;
+    }
+
+    @NotNull
+    private static WxPayUnifiedOrderV3Request getWxPayUnifiedOrderV3Request(String snowflakeId, BigDecimal fare, String thirdId) {
+        WxPayUnifiedOrderV3Request orderV3Request = new WxPayUnifiedOrderV3Request();
+        // description 商品描述（必填）
+        orderV3Request.setDescription("预约船只");
+        // out_trade_no 商户订单号（必填）
+        orderV3Request.setOutTradeNo(snowflakeId);
+        // 设置订单失效时间为当前时间 + 15分钟（北京时间）
+        ZonedDateTime expireTime = ZonedDateTime.now(ZoneId.of("Asia/Shanghai")).plusMinutes(15);
+        String timeExpireStr = expireTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        // time_expire 支付结束时间（选填）
+        orderV3Request.setTimeExpire(timeExpireStr);
+        // notify_url 商户回调地址（必填）
+        orderV3Request.setNotifyUrl("https://api.lureexpert.com/fucci/order/pay/notify/success");
+        // amount 订单金额（必填）
+        WxPayUnifiedOrderV3Request.Amount amount = new WxPayUnifiedOrderV3Request.Amount();
+        amount.setTotal(BaseWxPayRequest.yuan2Fen(fare));
+        orderV3Request.setAmount(amount);
+        // payer 支付者信息（必填）
+        WxPayUnifiedOrderV3Request.Payer payer = new WxPayUnifiedOrderV3Request.Payer();
+        payer.setOpenid(thirdId);
+        orderV3Request.setPayer(payer);
+        return orderV3Request;
     }
 
 }
