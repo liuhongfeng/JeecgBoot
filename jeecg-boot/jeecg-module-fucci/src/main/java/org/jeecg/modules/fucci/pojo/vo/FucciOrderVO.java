@@ -29,6 +29,9 @@ public class FucciOrderVO {
     @ApiModelProperty(value = "船号")
     private String boatNumber;
 
+    @ApiModelProperty(value = "预约填写的联系电话")
+    private String orderPhone;
+
     @ApiModelProperty(value = "预约状态")
     private String status;
 
