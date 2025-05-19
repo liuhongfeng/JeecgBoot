@@ -41,10 +41,37 @@ public interface IFucciOrderService {
      */
     JSONObject staffOrderDateList(HttpServletRequest request);
 
-    FucciOrderPayResultVO payTransactions(HttpServletRequest request, String outTradeNo);
+    /**
+     * 微信支付-按商户订单号查询订单接口
+     *
+     * @param orderId 订单ID
+     * @return 订单支付结果
+     */
+    FucciOrderPayResultVO payTransactions(String orderId);
 
+    /**
+     * 微信支付-按商户订单号关闭订单接口（支付超时订单处理）
+     *
+     * @param orderId 订单ID
+     */
+    void payClose(String orderId);
+
+    /**
+     * 微信支付-支付成功回调通知接口
+     *
+     * @param request    请求信息
+     * @param notifyData 回调通知数据
+     * @return 返回信息
+     */
     ResponseEntity<String> payNotifySuccess(HttpServletRequest request, String notifyData);
 
+    /**
+     * 微信支付-退款结果回调通知接口
+     *
+     * @param request    请求信息
+     * @param notifyData 回调通知数据
+     * @return 返回信息
+     */
     ResponseEntity<String> payNotifyRefund(HttpServletRequest request, String notifyData);
 
 }

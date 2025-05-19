@@ -1,5 +1,7 @@
 package org.jeecg.modules.fucci.service.impl;
 
+import cn.hutool.core.date.DateField;
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -14,6 +16,7 @@ import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.util.JwtUtil;
 import org.jeecg.modules.admin.order.entity.FcFishOrder;
@@ -106,10 +109,10 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
     }
 
     @Override
-    public FucciOrderPayResultVO payTransactions(HttpServletRequest request, String outTradeNo) {
+    public FucciOrderPayResultVO payTransactions(String orderId) {
         FucciOrderPayResultVO orderPayResultVO = new FucciOrderPayResultVO();
         try {
-            WxPayOrderQueryV3Result wxPayOrderQueryV3Result = wxService.queryOrderV3(null, outTradeNo);
+            WxPayOrderQueryV3Result wxPayOrderQueryV3Result = wxService.queryOrderV3(null, orderId);
             log.info("微信支付================查询订单结果：{}", JSONObject.toJSONString(wxPayOrderQueryV3Result));
             if (null != wxPayOrderQueryV3Result) {
                 BeanUtils.copyProperties(wxPayOrderQueryV3Result, orderPayResultVO);
@@ -133,6 +136,36 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
             throw new RuntimeException(e);
         }
         return orderPayResultVO;
+    }
+
+    @Override
+    public void payClose(String orderId) {
+        // 查询「预约状态为 3:已预约（订单待支付）」的超时订单数据
+        LambdaQueryWrapper<FcFishOrder> fcFishOrderWrapper = new LambdaQueryWrapper<>();
+        fcFishOrderWrapper.eq(FcFishOrder::getStatus, "3");
+        if (StringUtils.isNotEmpty(orderId)) {
+            // 查询指定订单数据
+            fcFishOrderWrapper.eq(FcFishOrder::getId, orderId);
+        } else {
+            // 查询所有超时订单数据
+            fcFishOrderWrapper.le(FcFishOrder::getCreateTime, DateUtil.offset(new Date(), DateField.MINUTE, -15));
+        }
+        List<FcFishOrder> orderList = fcFishOrderMapper.selectList(fcFishOrderWrapper);
+        log.info("已预约（订单待支付）数据量================>>：" + orderList.size());
+        for (FcFishOrder order : orderList) {
+            log.info("超时预约订单================>>：" + order.getId());
+            try {
+                // 微信支付-关闭订单处理
+                wxService.closeOrderV3(order.getId());
+            } catch (WxPayException e) {
+                throw new RuntimeException(e);
+            }
+            // 更新预约订单状态为 4:已取消预约（未支付，超时关闭订单）
+            FcFishOrder fcFishOrder = new FcFishOrder();
+            fcFishOrder.setId(order.getId());
+            fcFishOrder.setStatus("4");
+            fcFishOrderMapper.updateById(fcFishOrder);
+        }
     }
 
     @Override

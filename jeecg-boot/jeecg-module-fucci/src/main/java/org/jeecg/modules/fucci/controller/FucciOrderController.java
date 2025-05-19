@@ -45,9 +45,16 @@ public class FucciOrderController {
     }
 
     @ApiOperation(value = "微信支付-按商户订单号查询订单接口")
-    @GetMapping("/pay/transactions/{outTradeNo}")
-    public Result<?> payTransactions(HttpServletRequest request, @PathVariable String outTradeNo) {
-        return Result.ok(fucciOrderService.payTransactions(request, outTradeNo));
+    @GetMapping("/pay/transactions/{orderId}")
+    public Result<?> payTransactions(@PathVariable String orderId) {
+        return Result.ok(fucciOrderService.payTransactions(orderId));
+    }
+
+    @ApiOperation(value = "微信支付-按商户订单号关闭订单接口")
+    @GetMapping("/pay/close/{orderId}")
+    public Result<?> payClose(@PathVariable String orderId) {
+        fucciOrderService.payClose(orderId);
+        return Result.ok();
     }
 
     @ApiOperation(value = "微信支付-支付成功回调通知接口")

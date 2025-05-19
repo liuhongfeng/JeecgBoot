@@ -7,7 +7,7 @@ import lombok.Data;
 /**
  * @author lhf
  * @date 2025-05-14
- * @describe
+ * @describe 订单支付结果信息
  */
 @Data
 public class FucciOrderPayResultVO {
