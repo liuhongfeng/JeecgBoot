@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
@@ -32,8 +33,15 @@ public class FucciGroundBoatOrderDTO {
      * 预约票价
      */
     @ApiModelProperty(value = "预约票价")
-    @NotBlank(message = "预约票价不能为空")
+    @NotNull(message = "预约票价不能为空")
     private BigDecimal fare;
+
+    /**
+     * 预约用户姓名
+     */
+    @ApiModelProperty(value = "预约用户姓名")
+    @NotBlank(message = "预约用户姓名不能为空")
+    private String name;
 
     /**
      * 预约用户手机号

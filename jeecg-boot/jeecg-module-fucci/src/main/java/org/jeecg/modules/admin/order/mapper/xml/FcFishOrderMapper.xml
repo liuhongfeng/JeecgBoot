@@ -59,6 +59,7 @@
             ffo.ground_name,
             ffo.`date`,
             ffo.boat_number,
+            ffo.name AS orderName,
             ffo.phone AS orderPhone,
             ffo.`status`,
             ffg.phone,

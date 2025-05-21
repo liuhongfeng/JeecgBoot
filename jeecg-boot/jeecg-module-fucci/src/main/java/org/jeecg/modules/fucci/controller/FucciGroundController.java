@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 /**
  * @author lhf
@@ -50,7 +51,7 @@ public class FucciGroundController {
     @ApiOperation(value = "钓场船只确认预约接口")
     @PostMapping("/order")
     public Result<?> confirmOrder(HttpServletRequest request,
-                                       @RequestBody FucciGroundBoatOrderDTO groundBoatOrderDTO) {
+                                  @Valid @RequestBody FucciGroundBoatOrderDTO groundBoatOrderDTO) {
         return Result.ok(fucciGroundService.confirmOrder(request, groundBoatOrderDTO));
     }
 

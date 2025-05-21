@@ -241,6 +241,7 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         fcFishOrder.setDate(DateUtil.parse(groundBoatOrderDTO.getDate()));
         fcFishOrder.setBoatId(fishBoat.getId());
         fcFishOrder.setBoatNumber(fishBoat.getBoatNumber());
+        fcFishOrder.setName(groundBoatOrderDTO.getName());
         fcFishOrder.setPhone(groundBoatOrderDTO.getPhone());
         fcFishOrder.setFare(groundBoatOrderDTO.getFare());
         // 预约状态 1:已预约（支付完成） 2:已取消预约（已退款） 3:已预约（订单待支付） 4:已取消预约（未支付，超时关闭订单）
