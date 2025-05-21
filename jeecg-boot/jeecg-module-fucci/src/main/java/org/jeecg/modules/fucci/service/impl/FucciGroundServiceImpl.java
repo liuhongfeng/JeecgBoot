@@ -70,7 +70,10 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         String path = fucciProperties.getPath();
         JSONObject jsonObject = new JSONObject();
         List<FucciGroundVO> fucciGroundVOS = new ArrayList<>();
-        List<FcFishGround> fcFishGrounds = fcFishGroundService.list();
+        // 查询营业中的钓场信息（status = 1）
+        LambdaQueryWrapper<FcFishGround> fishGroundWrapper = new LambdaQueryWrapper<>();
+        fishGroundWrapper.eq(FcFishGround::getStatus, "1");
+        List<FcFishGround> fcFishGrounds = fcFishGroundService.list(fishGroundWrapper);
         fcFishGrounds.forEach(fcFishGround -> {
             FucciGroundVO fucciGroundVO = new FucciGroundVO();
             BeanUtils.copyProperties(fcFishGround, fucciGroundVO);
