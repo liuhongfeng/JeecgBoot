@@ -238,6 +238,7 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         FcFishOrder fcFishOrder = new FcFishOrder();
         fcFishOrder.setId(snowflakeId);
         fcFishOrder.setUserId(sysUser.getId());
+        fcFishOrder.setUsername(sysUser.getUsername());
         fcFishOrder.setRealname(sysUser.getRealname());
         fcFishOrder.setGroundId(fishGround.getId());
         fcFishOrder.setGroundName(fishGround.getName());
