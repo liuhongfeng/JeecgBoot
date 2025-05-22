@@ -4,18 +4,43 @@
     <div class="jeecg-basic-table-form-container">
       <a-form ref="formRef" @keyup.enter.native="searchQuery" :model="queryParam" :label-col="labelCol" :wrapper-col="wrapperCol">
         <a-row :gutter="24">
+          <!-- 根据预约订单ID查询 -->
+          <a-col :lg="6">
+            <a-form-item name="groundName">
+              <template #label><span title="预约订单ID">订单ID</span></template>
+              <a-input placeholder="请输入预约订单ID" v-model:value="queryParam.id" allow-clear ></a-input>
+            </a-form-item>
+          </a-col>
+          <a-col :lg="6">
+            <a-form-item name="realname">
+              <template #label><span title="小程序用户昵称">用户昵称</span></template>
+              <j-popup
+                placeholder="请选择小程序用户昵称" 
+                v-model:value="queryParam.realname" 
+                code="fc_fish_user_report"
+                :fieldConfig="[
+                  { source: 'id', target: 'userId' },
+                  { source: 'username', target: 'username' },
+                  { source: 'realname', target: 'realname' },
+                ]"
+                :multi="false"
+                :setFieldsValue="setFieldsValue" allow-clear />
+            </a-form-item>
+          </a-col>
           <a-col :lg="6">
             <a-form-item name="groundName">
               <template #label><span title="钓场名称">钓场名称</span></template>
               <a-input placeholder="请输入钓场名称" v-model:value="queryParam.groundName" allow-clear ></a-input>
             </a-form-item>
           </a-col>
-          <a-col :lg="6">
-            <a-form-item name="date">
-              <template #label><span title="预约日期">预约日期</span></template>
-              <a-range-picker value-format="YYYY-MM-DD"  v-model:value="queryParam.date" class="query-group-cust"/>
-            </a-form-item>
-          </a-col>
+          <template v-if="toggleSearchStatus">
+            <a-col :lg="6">
+              <a-form-item name="date">
+                <template #label><span title="预约日期">预约日期</span></template>
+                <a-range-picker value-format="YYYY-MM-DD"  v-model:value="queryParam.date" class="query-group-cust"/>
+              </a-form-item>
+            </a-col>
+          </template>
           <a-col :xl="6" :lg="7" :md="8" :sm="24">
             <span style="float: left; overflow: hidden" class="table-page-search-submitButtons">
               <a-col :lg="6">
@@ -75,6 +100,8 @@
   import { downloadFile } from '/@/utils/common/renderUtils';
   import FcFishOrderModal from './components/FcFishOrderModal.vue'
   import { useUserStore } from '/@/store/modules/user';
+  import JDictSelectTag from '/@/components/Form/src/jeecg/components/JDictSelectTag.vue';
+  import JSelectMultiple from '/@/components/Form/src/jeecg/components/JSelectMultiple.vue';
   import JPopup from '/@/components/Form/src/jeecg/components/JPopup.vue';
   import { cloneDeep } from "lodash-es";
 

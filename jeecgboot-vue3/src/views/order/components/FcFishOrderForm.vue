@@ -5,13 +5,19 @@
         <a-form ref="formRef" class="antd-modal-form" :labelCol="labelCol" :wrapperCol="wrapperCol" name="FcFishOrderForm">
           <a-row>
 						<a-col :span="24">
-							<a-form-item label="预约用户昵称" v-bind="validateInfos.realname" id="FcFishOrderForm-realname" name="realname">
+							<a-form-item label="小程序用户ID" v-bind="validateInfos.username" id="FcFishOrderForm-username" name="username">
+								<a-input v-model:value="formData.username" placeholder="请输入小程序用户ID" disabled allow-clear ></a-input>
+							</a-form-item>
+						</a-col>
+						<a-col :span="24">
+							<a-form-item label="小程序用户昵称" v-bind="validateInfos.realname" id="FcFishOrderForm-realname" name="realname">
 								<j-popup
-									placeholder="请选择预约用户昵称"
+									placeholder="请选择小程序用户昵称"
 									v-model:value="formData.realname"
 									code="fc_fish_user_report"
 									:fieldConfig="[
 										{ source: 'id', target: 'userId' },
+										{ source: 'username', target: 'username' },
 										{ source: 'realname', target: 'realname' },
 									]"
 									:multi="false"
@@ -86,6 +92,7 @@
   const emit = defineEmits(['register', 'ok']);
   const formData = reactive<Record<string, any>>({
     id: '',
+    username: '',   
     realname: '',   
     groundName: '',   
     date: '',   
@@ -98,9 +105,10 @@
   const labelCol = ref<any>({ xs: { span: 24 }, sm: { span: 5 } });
   const wrapperCol = ref<any>({ xs: { span: 24 }, sm: { span: 16 } });
   const confirmLoading = ref<boolean>(false);
-  //表单验证
+  // 表单验证
   const validatorRules = reactive({
-    realname: [{ required: true, message: '请输入预约用户昵称!'},],
+    username: [{ required: true, message: '请输入小程序用户ID!'},],
+    realname: [{ required: true, message: '请输入小程序用户昵称!'},],
     groundName: [{ required: true, message: '请输入钓场名称!'},],
     date: [{ required: true, message: '请输入预约日期!'},],
     boatNumber: [{ required: true, message: '请输入船号!'},],
