@@ -41,17 +41,24 @@ public class FcFishOrder implements Serializable {
     private String id;
 
     /**
-     * 预约用户ID
+     * 用户ID
      */
-    @Excel(name = "预约用户ID", width = 15)
-    @ApiModelProperty(value = "预约用户ID")
+    @Excel(name = "用户ID", width = 15)
+    @ApiModelProperty(value = "用户ID")
     private String userId;
 
     /**
-     * 预约用户昵称
+     * 小程序用户ID
      */
-    @Excel(name = "预约用户昵称", width = 15)
-    @ApiModelProperty(value = "预约用户昵称")
+    @Excel(name = "小程序用户ID", width = 15)
+    @ApiModelProperty(value = "小程序用户ID")
+    private String username;
+
+    /**
+     * 小程序用户昵称
+     */
+    @Excel(name = "小程序用户昵称", width = 15)
+    @ApiModelProperty(value = "小程序用户昵称")
     private String realname;
 
     /**
