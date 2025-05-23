@@ -46,10 +46,17 @@ public class FcFishStaff implements Serializable {
     private String userId;
 
     /**
-     * 小程序用户
+     * 小程序用户ID
      */
-    @Excel(name = "小程序用户", width = 15)
-    @ApiModelProperty(value = "小程序用户")
+    @Excel(name = "小程序用户ID", width = 15)
+    @ApiModelProperty(value = "小程序用户ID")
+    private String username;
+
+    /**
+     * 小程序用户昵称
+     */
+    @Excel(name = "小程序用户昵称", width = 15)
+    @ApiModelProperty(value = "小程序用户昵称")
     private String realname;
 
     /**
