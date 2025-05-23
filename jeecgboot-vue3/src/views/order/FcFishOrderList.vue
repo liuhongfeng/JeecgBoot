@@ -40,6 +40,24 @@
                 <a-range-picker value-format="YYYY-MM-DD"  v-model:value="queryParam.date" class="query-group-cust"/>
               </a-form-item>
             </a-col>
+            <a-col :lg="6">
+              <a-form-item name="name">
+                <template #label><span title="预约用户姓名">用户姓名</span></template>
+                <a-input placeholder="请输入预约用户姓名" v-model:value="queryParam.name" allow-clear ></a-input>
+              </a-form-item>
+            </a-col>
+            <a-col :lg="6">
+              <a-form-item name="phone">
+                <template #label><span title="预约用户手机号">手机号</span></template>
+                <a-input placeholder="请输入预约用户手机号" v-model:value="queryParam.phone" allow-clear ></a-input>
+              </a-form-item>
+            </a-col>
+            <a-col :lg="6">
+              <a-form-item name="status">
+                <template #label><span title="预约状态">预约状态</span></template>
+                <j-select-multiple placeholder="请选择预约状态" v-model:value="queryParam.status" dictCode="fish_order_status" allow-clear />
+              </a-form-item>
+            </a-col>
           </template>
           <a-col :xl="6" :lg="7" :md="8" :sm="24">
             <span style="float: left; overflow: hidden" class="table-page-search-submitButtons">

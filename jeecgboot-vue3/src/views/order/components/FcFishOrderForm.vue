@@ -50,6 +50,11 @@
 									:setFieldsValue="setFieldsValue"
 									 allow-clear />							</a-form-item>
 						</a-col>
+            <a-col :span="24">
+							<a-form-item label="预约用户姓名" v-bind="validateInfos.name" id="FcFishOrderForm-name" name="name">
+								<a-input v-model:value="formData.name" placeholder="请输入预约用户姓名"  allow-clear ></a-input>
+							</a-form-item>
+						</a-col>
 						<a-col :span="24">
 							<a-form-item label="预约用户手机号" v-bind="validateInfos.phone" id="FcFishOrderForm-phone" name="phone">
 								<a-input v-model:value="formData.phone" placeholder="请输入预约用户手机号"  allow-clear ></a-input>
@@ -63,6 +68,11 @@
 						<a-col :span="24">
 							<a-form-item label="预约状态" v-bind="validateInfos.status" id="FcFishOrderForm-status" name="status">
 								<j-dict-select-tag v-model:value="formData.status" dictCode="fish_order_status" placeholder="请选择预约状态"  allow-clear />
+							</a-form-item>
+						</a-col>
+            <a-col :span="24">
+							<a-form-item label="创建日期" v-bind="validateInfos.createTime" id="FcFishOrderForm-createTime" name="createTime">
+								<a-date-picker placeholder="请选择创建日期"  v-model:value="formData.createTime" showTime value-format="YYYY-MM-DD HH:mm:ss" style="width: 100%" disabled allow-clear />
 							</a-form-item>
 						</a-col>
           </a-row>
@@ -97,9 +107,11 @@
     groundName: '',   
     date: '',   
     boatNumber: '',   
+    name: '',   
     phone: '',   
     fare: undefined,
     status: '',   
+    createTime: '',   
   });
   const { createMessage } = useMessage();
   const labelCol = ref<any>({ xs: { span: 24 }, sm: { span: 5 } });
@@ -112,6 +124,7 @@
     groundName: [{ required: true, message: '请输入钓场名称!'},],
     date: [{ required: true, message: '请输入预约日期!'},],
     boatNumber: [{ required: true, message: '请输入船号!'},],
+    name: [{ required: true, message: '请输入预约用户姓名!'},],
     phone: [{ required: true, message: '请输入预约用户手机号!'},],
     fare: [{ required: true, message: '请输入预约票价!'},],
     status: [{ required: true, message: '请输入预约状态!'},],
