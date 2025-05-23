@@ -5,13 +5,19 @@
         <a-form ref="formRef" class="antd-modal-form" :labelCol="labelCol" :wrapperCol="wrapperCol" name="FcFishVipForm">
           <a-row>
 						<a-col :span="24">
-							<a-form-item label="小程序用户" v-bind="validateInfos.realname" id="FcFishVipForm-realname" name="realname">
+							<a-form-item label="小程序用户ID" v-bind="validateInfos.username" id="FcFishVipForm-username" name="username">
+								<a-input v-model:value="formData.username" placeholder="请输入小程序用户ID" disabled allow-clear ></a-input>
+							</a-form-item>
+						</a-col>
+						<a-col :span="24">
+							<a-form-item label="小程序用户昵称" v-bind="validateInfos.realname" id="FcFishVipForm-realname" name="realname">
 								<j-popup
-									placeholder="请选择小程序用户"
+									placeholder="请选择小程序用户昵称"
 									v-model:value="formData.realname"
 									code="fc_fish_user_report"
 									:fieldConfig="[
 										{ source: 'id', target: 'userId' },
+										{ source: 'username', target: 'username' },
 										{ source: 'realname', target: 'realname' },
 									]"
 									:multi="false"
@@ -36,6 +42,11 @@
 						<a-col :span="24">
 							<a-form-item label="会员结束时间" v-bind="validateInfos.endTime" id="FcFishVipForm-endTime" name="endTime">
 								<a-date-picker placeholder="请选择会员结束时间"  v-model:value="formData.endTime" value-format="YYYY-MM-DD"  style="width: 100%"  allow-clear />
+							</a-form-item>
+						</a-col>
+						<a-col :span="24">
+							<a-form-item label="创建日期" v-bind="validateInfos.createTime" id="FcFishVipForm-createTime" name="createTime">
+								<a-date-picker placeholder="请选择创建日期"  v-model:value="formData.createTime" showTime value-format="YYYY-MM-DD HH:mm:ss" style="width: 100%" disabled allow-clear />
 							</a-form-item>
 						</a-col>
           </a-row>
@@ -64,11 +75,13 @@
   const emit = defineEmits(['register', 'ok']);
   const formData = reactive<Record<string, any>>({
     id: '',
+    username: '',   
     realname: '',   
     name: '',   
     phone: '',   
     startTime: '',   
     endTime: '',   
+    createTime: '',   
   });
   const { createMessage } = useMessage();
   const labelCol = ref<any>({ xs: { span: 24 }, sm: { span: 5 } });
@@ -76,9 +89,10 @@
   const confirmLoading = ref<boolean>(false);
   //表单验证
   const validatorRules = reactive({
-    realname: [{ required: true, message: '请输入小程序用户!'},],
+    username: [{ required: true, message: '请输入小程序用户ID!'},],
+    realname: [{ required: true, message: '请输入小程序用户昵称!'},],
     name: [{ required: true, message: '请输入会员姓名!'},],
-    phone: [{ required: true, message: '请输入会员手机号!'},],
+    phone: [{ required: true, message: '请输入会员手机号!'}, { pattern: /^1[3456789]\d{9}$/, message: '请输入正确的手机号码!'},],
     startTime: [{ required: true, message: '请输入会员开始时间!'},],
     endTime: [{ required: true, message: '请输入会员结束时间!'},],
   });

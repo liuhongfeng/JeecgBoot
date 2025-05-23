@@ -6,13 +6,14 @@
         <a-row :gutter="24">
           <a-col :lg="6">
             <a-form-item name="realname">
-              <template #label><span title="小程序用户">小程序用</span></template>
+              <template #label><span title="小程序用户昵称">用户昵称</span></template>
               <j-popup
-                placeholder="请选择小程序用户" 
+                placeholder="请选择小程序用户昵称" 
                 v-model:value="queryParam.realname" 
                 code="fc_fish_user_report"
                 :fieldConfig="[
                   { source: 'id', target: 'userId' },
+                  { source: 'username', target: 'username' },
                   { source: 'realname', target: 'realname' },
                 ]"
                 :multi="false"
@@ -28,7 +29,7 @@
           <template v-if="toggleSearchStatus">
             <a-col :lg="6">
               <a-form-item name="phone">
-                <template #label><span title="员工手机号">员工手机</span></template>
+                <template #label><span title="员工手机号">手机号</span></template>
                 <a-input placeholder="请输入员工手机号" v-model:value="queryParam.phone" allow-clear ></a-input>
               </a-form-item>
             </a-col>
