@@ -92,6 +92,13 @@ public class FcFishVip implements Serializable {
     private Date endTime;
 
     /**
+     * 会员次数
+     */
+    @Excel(name = "会员次数", width = 15)
+    @ApiModelProperty(value = "会员次数")
+    private Integer count;
+
+    /**
      * 删除状态（0:正常，1:删除）
      */
     @Excel(name = "删除状态（0:正常，1:删除）", width = 15)

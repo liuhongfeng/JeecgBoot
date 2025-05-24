@@ -49,6 +49,11 @@ public class FucciUserVO {
     private Date vipEndTime;
 
     /**
+     * 会员次数
+     */
+    private Integer vipCount;
+
+    /**
      * 是否工作人员（true:是，false:否）
      */
     private boolean staff;

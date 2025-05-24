@@ -42,7 +42,10 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -115,11 +118,11 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         fucciGroundDetailsVO.setDetailsImages(detailsImages);
         fucciGroundDetailsVO.setVip(false);
         if (null != sysUser) {
-            // 查询用户是否为 VIP 会员用户（且没有超过会员结束时间）
+            // 查询用户是否为 VIP 会员用户（且会员使用次数大于0）
             LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
             vipQueryWrapper.eq(FcFishVip::getUserId, sysUser.getId());
             FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
-            if (fcFishVip != null && fcFishVip.getEndTime().after(DateUtil.date())) {
+            if (fcFishVip != null && fcFishVip.getCount() > 0) {
                 fucciGroundDetailsVO.setVip(true);
             }
         }
@@ -139,11 +142,11 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         BeanUtils.copyProperties(fcFishGround, fucciGroundOrderVO);
         fucciGroundOrderVO.setVip(false);
         if (null != sysUser) {
-            // 查询用户是否为 VIP 会员用户（且没有超过会员结束时间）
+            // 查询用户是否为 VIP 会员用户（且会员使用次数大于0）
             LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
             vipQueryWrapper.eq(FcFishVip::getUserId, sysUser.getId());
             FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
-            if (fcFishVip != null && fcFishVip.getEndTime().after(DateUtil.date())) {
+            if (fcFishVip != null && fcFishVip.getCount() > 0) {
                 fucciGroundOrderVO.setVip(true);
             }
         }
@@ -180,13 +183,13 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysUser::getUsername, username);
         SysUser sysUser = sysUserService.getOne(queryWrapper);
-        // 查询用户是否为 VIP 会员用户（且没有超过会员结束时间）
+        // 查询用户是否为 VIP 会员用户（且会员使用次数大于0）
         boolean vip = false;
         if (null != sysUser) {
             LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
             vipQueryWrapper.eq(FcFishVip::getUserId, sysUser.getId());
             FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
-            if (fcFishVip != null && fcFishVip.getEndTime().after(DateUtil.date())) {
+            if (fcFishVip != null && fcFishVip.getCount() > 0) {
                 vip = true;
             }
         }

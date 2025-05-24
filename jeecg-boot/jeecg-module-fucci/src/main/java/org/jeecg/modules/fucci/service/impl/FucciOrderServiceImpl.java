@@ -23,6 +23,8 @@ import org.jeecg.modules.admin.order.entity.FcFishOrder;
 import org.jeecg.modules.admin.order.mapper.FcFishOrderMapper;
 import org.jeecg.modules.admin.staff.entity.FcFishStaff;
 import org.jeecg.modules.admin.staff.service.IFcFishStaffService;
+import org.jeecg.modules.admin.vip.entity.FcFishVip;
+import org.jeecg.modules.admin.vip.service.IFcFishVipService;
 import org.jeecg.modules.fucci.pojo.vo.FucciGroundStaffOrderDateVO;
 import org.jeecg.modules.fucci.pojo.vo.FucciGroundStaffOrderVO;
 import org.jeecg.modules.fucci.pojo.vo.FucciOrderPayResultVO;
@@ -33,6 +35,7 @@ import org.jeecg.modules.system.service.ISysUserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -52,6 +55,7 @@ import java.util.stream.Collectors;
 public class FucciOrderServiceImpl implements IFucciOrderService {
 
     private ISysUserService sysUserService;
+    private IFcFishVipService fcFishVipService;
     private IFcFishStaffService fcFishStaffService;
     private FcFishOrderMapper fcFishOrderMapper;
     private WxPayService wxService;
@@ -109,6 +113,7 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public FucciOrderPayResultVO payTransactions(String orderId) {
         FucciOrderPayResultVO orderPayResultVO = new FucciOrderPayResultVO();
         try {
@@ -129,6 +134,15 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
                         order.setId(wxPayOrderQueryV3Result.getOutTradeNo());
                         order.setStatus("1");
                         fcFishOrderMapper.updateById(order);
+                        // 查询用户是否为 VIP 会员用户（VIP 会员用户下单支付成功，会员次数减1）
+                        LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
+                        vipQueryWrapper.eq(FcFishVip::getUserId, dbOrder.getId());
+                        FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
+                        if (null != fcFishVip) {
+                            // 会员次数减1
+                            fcFishVip.setCount(fcFishVip.getCount() - 1);
+                            fcFishVipService.updateById(fcFishVip);
+                        }
                     }
                 }
             }
@@ -169,6 +183,7 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ResponseEntity<String> payNotifySuccess(HttpServletRequest request, String notifyData) {
         SignatureHeader header = getRequestHeader(request);
         try {
@@ -188,6 +203,15 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
                     order.setId(decryptRes.getOutTradeNo());
                     order.setStatus("1");
                     fcFishOrderMapper.updateById(order);
+                    // 查询用户是否为 VIP 会员用户（VIP 会员用户下单支付成功，会员次数减1）
+                    LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
+                    vipQueryWrapper.eq(FcFishVip::getUserId, dbOrder.getId());
+                    FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
+                    if (null != fcFishVip) {
+                        // 会员次数减1
+                        fcFishVip.setCount(fcFishVip.getCount() - 1);
+                        fcFishVipService.updateById(fcFishVip);
+                    }
                 }
                 // 成功返回200/204，body 无需有内容
                 return ResponseEntity.status(200).body("");

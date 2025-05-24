@@ -161,14 +161,15 @@ public class FucciUserServiceImpl implements IFucciUserService {
         fucciUserVO.setAvatarUrl(sysUser.getAvatar());
         fucciUserVO.setVip(false);
         fucciUserVO.setStaff(false);
-        // 查询用户是否为 VIP 会员用户（且没有超过会员结束时间）
+        // 查询用户是否为 VIP 会员用户（且会员使用次数大于0）
         LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
         vipQueryWrapper.eq(FcFishVip::getUserId, sysUser.getId());
         FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
-        if (fcFishVip != null && fcFishVip.getEndTime().after(DateUtil.date())) {
+        if (fcFishVip != null && fcFishVip.getCount() > 0) {
             fucciUserVO.setVip(true);
             fucciUserVO.setVipStartTime(fcFishVip.getStartTime());
             fucciUserVO.setVipEndTime(fcFishVip.getEndTime());
+            fucciUserVO.setVipCount(fcFishVip.getCount());
         }
         // 查询用户是否为工作人员（工作人员只能服务一个钓场）
         LambdaQueryWrapper<FcFishStaff> staffQueryWrapper = new LambdaQueryWrapper<>();
