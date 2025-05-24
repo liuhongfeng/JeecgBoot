@@ -26,22 +26,9 @@ export const columns: BasicColumn[] = [
     dataIndex: 'phone'
   },
   {
-    title: '会员开始时间',
+    title: '会员次数',
     align: "center",
-    dataIndex: 'startTime',
-    customRender:({text}) =>{
-      text = !text ? "" : (text.length > 10 ? text.substr(0,10) : text);
-      return text;
-    },
-  },
-  {
-    title: '会员结束时间',
-    align: "center",
-    dataIndex: 'endTime',
-    customRender:({text}) =>{
-      text = !text ? "" : (text.length > 10 ? text.substr(0,10) : text);
-      return text;
-    },
+    dataIndex: 'count'
   },
   {
     title: '创建日期',
@@ -56,7 +43,6 @@ export const superQuerySchema = {
   realname: {title: '小程序用户昵称',order: 1,view: 'popup', type: 'string',code: 'fc_fish_user_report', orgFields: 'realname', destFields: 'realname', popupMulti: false,},
   name: {title: '会员姓名',order: 2,view: 'text', type: 'string',},
   phone: {title: '会员手机号',order: 3,view: 'text', type: 'string',},
-  startTime: {title: '会员开始时间',order: 4,view: 'date', type: 'string',},
-  endTime: {title: '会员结束时间',order: 5,view: 'date', type: 'string',},
+  count: {title: '会员次数',order: 6,view: 'number', type: 'number',},
   createTime: {title: '创建日期',order: 6,view: 'datetime', type: 'string',},
 };

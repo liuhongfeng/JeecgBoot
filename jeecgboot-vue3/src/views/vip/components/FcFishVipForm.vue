@@ -34,14 +34,9 @@
 								<a-input v-model:value="formData.phone" placeholder="请输入会员手机号"  allow-clear ></a-input>
 							</a-form-item>
 						</a-col>
-						<a-col :span="24">
-							<a-form-item label="会员开始时间" v-bind="validateInfos.startTime" id="FcFishVipForm-startTime" name="startTime">
-								<a-date-picker placeholder="请选择会员开始时间"  v-model:value="formData.startTime" value-format="YYYY-MM-DD"  style="width: 100%"  allow-clear />
-							</a-form-item>
-						</a-col>
-						<a-col :span="24">
-							<a-form-item label="会员结束时间" v-bind="validateInfos.endTime" id="FcFishVipForm-endTime" name="endTime">
-								<a-date-picker placeholder="请选择会员结束时间"  v-model:value="formData.endTime" value-format="YYYY-MM-DD"  style="width: 100%"  allow-clear />
+            <a-col :span="24">
+							<a-form-item label="会员次数" v-bind="validateInfos.count" id="FcFishVipForm-count" name="count">
+								<a-input-number v-model:value="formData.count" placeholder="请输入会员次数" style="width: 100%" />
 							</a-form-item>
 						</a-col>
 						<a-col :span="24">
@@ -79,8 +74,7 @@
     realname: '',   
     name: '',   
     phone: '',   
-    startTime: '',   
-    endTime: '',   
+    count: undefined,
     createTime: '',   
   });
   const { createMessage } = useMessage();
@@ -93,8 +87,7 @@
     realname: [{ required: true, message: '请输入小程序用户昵称!'},],
     name: [{ required: true, message: '请输入会员姓名!'},],
     phone: [{ required: true, message: '请输入会员手机号!'}, { pattern: /^1[3456789]\d{9}$/, message: '请输入正确的手机号码!'},],
-    startTime: [{ required: true, message: '请输入会员开始时间!'},],
-    endTime: [{ required: true, message: '请输入会员结束时间!'},],
+    count: [{ required: true}, { pattern: /^-?\d+$/, message: '请输入整数!'},],
   });
   const { resetFields, validate, validateInfos } = useForm(formData, validatorRules, { immediate: false });
 
