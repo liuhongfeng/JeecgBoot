@@ -136,7 +136,7 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
                         fcFishOrderMapper.updateById(order);
                         // 查询用户是否为 VIP 会员用户（VIP 会员用户下单支付成功，会员次数减1）
                         LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
-                        vipQueryWrapper.eq(FcFishVip::getUserId, dbOrder.getId());
+                        vipQueryWrapper.eq(FcFishVip::getUserId, dbOrder.getUserId());
                         FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
                         if (null != fcFishVip) {
                             // 会员次数减1
@@ -205,7 +205,7 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
                     fcFishOrderMapper.updateById(order);
                     // 查询用户是否为 VIP 会员用户（VIP 会员用户下单支付成功，会员次数减1）
                     LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
-                    vipQueryWrapper.eq(FcFishVip::getUserId, dbOrder.getId());
+                    vipQueryWrapper.eq(FcFishVip::getUserId, dbOrder.getUserId());
                     FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
                     if (null != fcFishVip) {
                         // 会员次数减1
