@@ -19,6 +19,9 @@ public class FucciOrderVO {
     @ApiModelProperty(value = "id")
     private String id;
 
+    @ApiModelProperty(value = "钓场ID")
+    private String groundId;
+
     @ApiModelProperty(value = "钓场名称")
     private String groundName;
 
@@ -35,8 +38,17 @@ public class FucciOrderVO {
     @ApiModelProperty(value = "预约填写的联系电话")
     private String orderPhone;
 
+    @ApiModelProperty(value = "预约时的票价")
+    private String orderFare;
+
     @ApiModelProperty(value = "预约状态")
     private String status;
+
+    @ApiModelProperty(value = "是否预约修改（true:是，false:否）")
+    private Boolean orderModify;
+
+    @ApiModelProperty(value = "预约修改次数")
+    private Integer orderModifyCount;
 
     @ApiModelProperty(value = "钓场联系电话")
     private String phone;

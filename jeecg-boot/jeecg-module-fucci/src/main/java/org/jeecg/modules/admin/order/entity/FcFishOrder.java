@@ -128,6 +128,13 @@ public class FcFishOrder implements Serializable {
     private String status;
 
     /**
+     * 预约修改次数
+     */
+    @Excel(name = "预约修改次数", width = 15)
+    @ApiModelProperty(value = "预约修改次数")
+    private Integer modifyCount;
+
+    /**
      * 删除状态（0:正常，1:删除）
      */
     @Excel(name = "删除状态（0:正常，1:删除）", width = 15)

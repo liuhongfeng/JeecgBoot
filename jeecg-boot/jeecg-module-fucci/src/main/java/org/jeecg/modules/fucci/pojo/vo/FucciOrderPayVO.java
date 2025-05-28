@@ -1,6 +1,7 @@
 package org.jeecg.modules.fucci.pojo.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -10,6 +11,7 @@ import lombok.Data;
  * @describe
  */
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FucciOrderPayVO {
 
     @ApiModelProperty(value = "预约订单id")

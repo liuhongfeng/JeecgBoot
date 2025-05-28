@@ -1,5 +1,6 @@
 package org.jeecg.modules.fucci.service.impl;
 
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -42,10 +43,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -178,14 +176,52 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public FucciOrderPayVO confirmOrder(HttpServletRequest request, FucciGroundBoatOrderDTO groundBoatOrderDTO) {
-        // 1. 查询用户信息
+        // 钓场船只预约下单返参数据（新增预约和修改预约）
+        FucciOrderPayVO orderPayVO = new FucciOrderPayVO();
+        // 查询用户信息
         String username = JwtUtil.getUserNameByToken(request);
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysUser::getUsername, username);
         SysUser sysUser = sysUserService.getOne(queryWrapper);
-        // 查询用户是否为 VIP 会员用户（且会员使用次数大于0）
+        // 1. 检查船只数据状态
+        FcFishBoat fishBoat = fcFishBoatService.getById(groundBoatOrderDTO.getBoatId());
+        if (null == fishBoat) {
+            throw new JeecgBootException("船只不存在");
+        }
+        // 2. 检查钓场数据状态
+        FcFishGround fishGround = fcFishGroundService.getById(fishBoat.getGroundId());
+        if (null == fishGround) {
+            throw new JeecgBootException("钓场不存在");
+        }
+        // 3. 检查船只是否已被预约，查询预约状态为：1:已预约（支付完成） 3:已预约（订单待支付）的数据
+        LambdaQueryWrapper<FcFishOrder> orderLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        orderLambdaQueryWrapper.eq(FcFishOrder::getGroundId, fishGround.getId());
+        orderLambdaQueryWrapper.eq(FcFishOrder::getDate, DateUtil.parse(groundBoatOrderDTO.getDate()));
+        orderLambdaQueryWrapper.eq(FcFishOrder::getBoatId, fishBoat.getId());
+        orderLambdaQueryWrapper.in(FcFishOrder::getStatus, "1", "3");
+        Long count = fcFishOrderMapper.selectCount(orderLambdaQueryWrapper);
+        if (count > 0) {
+            throw new JeecgBootException("该日期此船只已被预约，请重新选择");
+        }
+        // 修改预约订单处理
+        if (StringUtils.isNotEmpty(groundBoatOrderDTO.getId())) {
+            // 查询预约订单数据
+            FcFishOrder fcFishOrder = fcFishOrderMapper.selectById(groundBoatOrderDTO.getId());
+            // 校验预约订单修改数据
+            validateOrderModification(fcFishOrder, groundBoatOrderDTO);
+            // 修改预约订单数据
+            fcFishOrder.setDate(DateUtil.parse(groundBoatOrderDTO.getDate()));
+            fcFishOrder.setBoatId(groundBoatOrderDTO.getBoatId());
+            // 预约修改次数加 1
+            fcFishOrder.setModifyCount(fcFishOrder.getModifyCount() + 1);
+            fcFishOrderMapper.updateById(fcFishOrder);
+            orderPayVO.setOrderId(fcFishOrder.getId());
+            return orderPayVO;
+        }
+        // 新增预约订单处理
         boolean vip = false;
         if (null != sysUser) {
+            // 查询用户是否为 VIP 会员用户（且会员使用次数大于0）
             LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
             vipQueryWrapper.eq(FcFishVip::getUserId, sysUser.getId());
             FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
@@ -193,17 +229,7 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
                 vip = true;
             }
         }
-        // 2. 检查船只数据状态
-        FcFishBoat fishBoat = fcFishBoatService.getById(groundBoatOrderDTO.getBoatId());
-        if (null == fishBoat) {
-            throw new JeecgBootException("船只不存在");
-        }
-        // 3. 检查钓场数据状态
-        FcFishGround fishGround = fcFishGroundService.getById(fishBoat.getGroundId());
-        if (null == fishGround) {
-            throw new JeecgBootException("钓场不存在");
-        }
-        // 4. 检查票价是否正确
+        // 检查票价是否正确
         if (vip) {
             // 匹配 VIP 价格
             if (groundBoatOrderDTO.getFare().compareTo(fishGround.getVipPrice()) != 0) {
@@ -214,16 +240,6 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
             if (groundBoatOrderDTO.getFare().compareTo(fishGround.getPrice()) != 0) {
                 throw new JeecgBootException("票价有误，请重新进入此页面预约");
             }
-        }
-        // 5. 检查船只是否已被预约，查询预约状态为：1:已预约（支付完成） 3:已预约（订单待支付）的数据
-        LambdaQueryWrapper<FcFishOrder> orderLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        orderLambdaQueryWrapper.eq(FcFishOrder::getGroundId, fishGround.getId());
-        orderLambdaQueryWrapper.eq(FcFishOrder::getDate, DateUtil.parse(groundBoatOrderDTO.getDate()));
-        orderLambdaQueryWrapper.eq(FcFishOrder::getBoatId, fishBoat.getId());
-        orderLambdaQueryWrapper.in(FcFishOrder::getStatus, "1", "3");
-        Long count = fcFishOrderMapper.selectCount(orderLambdaQueryWrapper);
-        if (count > 0) {
-            throw new JeecgBootException("该日期此船只已被预约，请重新选择");
         }
         // 预约订单ID（雪花算法生成）也用做微信支付的「商户订单号」
         String snowflakeId = String.valueOf(IdUtil.getSnowflake(1, 1).nextId());
@@ -255,10 +271,48 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         fcFishOrder.setStatus("3");
         fcFishOrderMapper.insert(fcFishOrder);
         // 钓场船只预约下单返参数据
-        FucciOrderPayVO orderPayVO = new FucciOrderPayVO();
         orderPayVO.setOrderId(snowflakeId);
         BeanUtils.copyProperties(result, orderPayVO);
         return orderPayVO;
+    }
+
+    /**
+     * 校验预约订单修改数据
+     *
+     * @param fcFishOrder        预约订单数据
+     * @param groundBoatOrderDTO 预约船只订单数据
+     */
+    private void validateOrderModification(FcFishOrder fcFishOrder, FucciGroundBoatOrderDTO groundBoatOrderDTO) {
+        if (null == fcFishOrder) {
+            throw new JeecgBootException("预约订单不存在，无法修改");
+        }
+        if (!groundBoatOrderDTO.getName().equals(fcFishOrder.getName())) {
+            throw new JeecgBootException("预约订单姓名不能修改");
+        }
+        if (!groundBoatOrderDTO.getPhone().equals(fcFishOrder.getPhone())) {
+            throw new JeecgBootException("预约订单手机号不能修改");
+        }
+        if (groundBoatOrderDTO.getFare().compareTo(fcFishOrder.getFare()) != 0) {
+            throw new JeecgBootException("预约订单票价不能修改");
+        }
+        // 检查【预约日期】和【预约船只】是否都未修改
+        if (fcFishOrder.getDate().compareTo(DateUtil.parse(groundBoatOrderDTO.getDate())) == 0
+                && fcFishOrder.getBoatId().equals(groundBoatOrderDTO.getBoatId())) {
+            throw new JeecgBootException("预约日期和船只都未修改，请重新选择");
+        }
+        // 检查预约订单状态，1:已预约（支付完成）状态的订单才可以修改
+        if (!"1".equals(fcFishOrder.getStatus())) {
+            throw new JeecgBootException("预约订单状态异常，无法修改");
+        }
+        // 检查预约订单是否未修改过，修改次数 modifyCount 为 0 时，才可以修改
+        if (0 != fcFishOrder.getModifyCount()) {
+            throw new JeecgBootException("预约订单已修改过，无法再次修改");
+        }
+        // 检查预约订单日期是否可以修改
+        long betweenDay = DateUtil.between(fcFishOrder.getDate(), new Date(), DateUnit.HOUR);
+        if (new Date().after(fcFishOrder.getDate()) || betweenDay <= 72) {
+            throw new JeecgBootException("预约订单日期只能提前 3 天修改，当前时间无法修改");
+        }
     }
 
     @NotNull

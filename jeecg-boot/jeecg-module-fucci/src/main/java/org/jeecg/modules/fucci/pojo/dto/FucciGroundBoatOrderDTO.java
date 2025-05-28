@@ -17,6 +17,12 @@ import java.math.BigDecimal;
 public class FucciGroundBoatOrderDTO {
 
     /**
+     * 预约订单 id
+     */
+    @ApiModelProperty(value = "预约订单 id")
+    private String id;
+
+    /**
      * 预约日期
      */
     @ApiModelProperty(value = "预约日期")

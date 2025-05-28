@@ -40,10 +40,16 @@
     <select id="getOrderByUserId" resultType="org.jeecg.modules.fucci.pojo.vo.FucciOrderVO">
         SELECT
             id,
+            ground_id,
             ground_name,
             `date`,
             boat_number,
-            `status`
+            name AS orderName,
+            phone AS orderPhone,
+            fare AS orderFare,
+            `status`,
+            IF(modify_count > 0, 1, 0) AS orderModify,
+            modify_count AS orderModifyCount
         FROM
             fc_fish_order
         WHERE
@@ -56,12 +62,16 @@
     <select id="getOrderById" resultType="org.jeecg.modules.fucci.pojo.vo.FucciOrderVO">
         SELECT
             ffo.id,
+            ffo.ground_id,
             ffo.ground_name,
             ffo.`date`,
             ffo.boat_number,
             ffo.name AS orderName,
             ffo.phone AS orderPhone,
+            ffo.fare AS orderFare,
             ffo.`status`,
+            IF(ffo.modify_count > 0, 1, 0) AS orderModify,
+            ffo.modify_count AS orderModifyCount,
             ffg.phone,
             ffg.address
         FROM
