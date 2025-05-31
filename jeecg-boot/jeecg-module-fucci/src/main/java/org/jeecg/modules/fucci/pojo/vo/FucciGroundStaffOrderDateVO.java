@@ -43,6 +43,9 @@ public class FucciGroundStaffOrderDateVO {
     @ApiModelProperty(value = "用户预约的船号")
     private String boatNumber;
 
+    @ApiModelProperty(value = "用户预约时填写的姓名")
+    private String name;
+
     @ApiModelProperty(value = "用户预约时填写的联系电话")
     private String phone;
 

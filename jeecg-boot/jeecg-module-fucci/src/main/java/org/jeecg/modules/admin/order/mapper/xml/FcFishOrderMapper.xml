@@ -93,6 +93,7 @@
             `date`,
             boat_id,
             boat_number,
+            name,
             phone
         FROM
             fc_fish_order
