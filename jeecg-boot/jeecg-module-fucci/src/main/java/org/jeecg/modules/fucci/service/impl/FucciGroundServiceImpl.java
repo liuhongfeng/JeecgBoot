@@ -316,7 +316,9 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
     }
 
     @NotNull
-    private static WxPayUnifiedOrderV3Request getWxPayUnifiedOrderV3Request(String snowflakeId, BigDecimal fare, String thirdId) {
+    private WxPayUnifiedOrderV3Request getWxPayUnifiedOrderV3Request(String snowflakeId, BigDecimal fare, String thirdId) {
+        // 环境访问地址
+        String path = fucciProperties.getPath();
         WxPayUnifiedOrderV3Request orderV3Request = new WxPayUnifiedOrderV3Request();
         // description 商品描述（必填）
         orderV3Request.setDescription("预约船只");
@@ -328,7 +330,7 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         // time_expire 支付结束时间（选填）
         orderV3Request.setTimeExpire(timeExpireStr);
         // notify_url 商户回调地址（必填）
-        orderV3Request.setNotifyUrl("https://api.lureexpert.com/fucci/order/pay/notify/success");
+        orderV3Request.setNotifyUrl(path + FucciConstant.ORDER_NOTIFY_URI);
         // amount 订单金额（必填）
         WxPayUnifiedOrderV3Request.Amount amount = new WxPayUnifiedOrderV3Request.Amount();
         amount.setTotal(BaseWxPayRequest.yuan2Fen(fare));
