@@ -1,13 +1,16 @@
 package org.jeecg.modules.fucci.pojo.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * 福羲用户信息
  */
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FucciUserVO {
 
     /**
@@ -36,12 +39,19 @@ public class FucciUserVO {
     /**
      * VIP 开始时间
      */
-    private LocalDateTime vipStartTime;
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    private Date vipStartTime;
 
     /**
      * VIP 结束时间
      */
-    private LocalDateTime vipEndTime;
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    private Date vipEndTime;
+
+    /**
+     * 会员次数
+     */
+    private Integer vipCount;
 
     /**
      * 是否工作人员（true:是，false:否）

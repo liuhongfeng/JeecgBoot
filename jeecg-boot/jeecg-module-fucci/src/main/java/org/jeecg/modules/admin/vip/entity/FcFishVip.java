@@ -1,4 +1,4 @@
-package org.jeecg.modules.admin.order.entity;
+package org.jeecg.modules.admin.vip.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -10,34 +10,32 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import org.jeecg.common.aspect.annotation.Dict;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * @Description: 钓场船只预约
+ * @Description: 会员信息
  * @Author: jeecg-boot
- * @Date: 2025-04-20
+ * @Date: 2025-04-26
  * @Version: V1.0
  */
 @Data
-@TableName("fc_fish_order")
+@TableName("fc_fish_vip")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value = "fc_fish_order对象", description = "钓场船只预约")
-public class FcFishOrder implements Serializable {
+@ApiModel(value = "fc_fish_vip对象", description = "会员信息")
+public class FcFishVip implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * id
+     * 主键
      */
     @TableId(type = IdType.ASSIGN_ID)
-    @ApiModelProperty(value = "id")
+    @ApiModelProperty(value = "主键")
     private String id;
 
     /**
@@ -62,77 +60,43 @@ public class FcFishOrder implements Serializable {
     private String realname;
 
     /**
-     * 钓场ID
+     * 会员姓名
      */
-    @Excel(name = "钓场ID", width = 15)
-    @ApiModelProperty(value = "钓场ID")
-    private String groundId;
-
-    /**
-     * 钓场名称
-     */
-    @Excel(name = "钓场名称", width = 15)
-    @ApiModelProperty(value = "钓场名称")
-    private String groundName;
-
-    /**
-     * 预约日期
-     */
-    @Excel(name = "预约日期", width = 15, format = "yyyy-MM-dd")
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @ApiModelProperty(value = "预约日期")
-    private Date date;
-
-    /**
-     * 钓场船只ID
-     */
-    @Excel(name = "钓场船只ID", width = 15)
-    @ApiModelProperty(value = "钓场船只ID")
-    private String boatId;
-
-    /**
-     * 船号
-     */
-    @Excel(name = "船号", width = 15)
-    @ApiModelProperty(value = "船号")
-    private String boatNumber;
-
-    /**
-     * 预约用户姓名
-     */
-    @Excel(name = "预约用户姓名", width = 15)
-    @ApiModelProperty(value = "预约用户姓名")
+    @Excel(name = "会员姓名", width = 15)
+    @ApiModelProperty(value = "会员姓名")
     private String name;
 
     /**
-     * 预约用户手机号
+     * 会员手机号
      */
-    @Excel(name = "预约用户手机号", width = 15)
-    @ApiModelProperty(value = "预约用户手机号")
+    @Excel(name = "会员手机号", width = 15)
+    @ApiModelProperty(value = "会员手机号")
     private String phone;
 
     /**
-     * 预约票价
+     * 会员开始时间
      */
-    @Excel(name = "预约票价", width = 15)
-    @ApiModelProperty(value = "预约票价")
-    private BigDecimal fare;
+    @Excel(name = "会员开始时间", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "会员开始时间")
+    private Date startTime;
 
     /**
-     * 预约状态
+     * 会员结束时间
      */
-    @Excel(name = "预约状态", width = 15, dicCode = "fish_order_status")
-    @Dict(dicCode = "fish_order_status")
-    @ApiModelProperty(value = "预约状态")
-    private String status;
+    @Excel(name = "会员结束时间", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "会员结束时间")
+    private Date endTime;
 
     /**
-     * 预约修改次数
+     * 会员次数
      */
-    @Excel(name = "预约修改次数", width = 15)
-    @ApiModelProperty(value = "预约修改次数")
-    private Integer modifyCount;
+    @Excel(name = "会员次数", width = 15)
+    @ApiModelProperty(value = "会员次数")
+    private Integer count;
 
     /**
      * 删除状态（0:正常，1:删除）
@@ -169,5 +133,4 @@ public class FcFishOrder implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新日期")
     private Date updateTime;
-
 }

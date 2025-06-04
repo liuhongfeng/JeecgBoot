@@ -44,4 +44,10 @@ public class FucciUserController {
         return Result.ok(fucciUserService.updateUserInfo(request, fucciUserDTO));
     }
 
+    @ApiOperation(value = "微信小程序用户登出接口")
+    @PostMapping("/logout")
+    public Result<?> logout(HttpServletRequest request) {
+        return Result.ok(fucciUserService.logout(request));
+    }
+
 }

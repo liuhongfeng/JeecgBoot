@@ -1,4 +1,4 @@
-package org.jeecg.modules.admin.order.entity;
+package org.jeecg.modules.admin.staff.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -10,34 +10,32 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import org.jeecg.common.aspect.annotation.Dict;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * @Description: 钓场船只预约
+ * @Description: 员工信息
  * @Author: jeecg-boot
- * @Date: 2025-04-20
+ * @Date: 2025-04-26
  * @Version: V1.0
  */
 @Data
-@TableName("fc_fish_order")
+@TableName("fc_fish_staff")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value = "fc_fish_order对象", description = "钓场船只预约")
-public class FcFishOrder implements Serializable {
+@ApiModel(value = "fc_fish_staff对象", description = "员工信息")
+public class FcFishStaff implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * id
+     * 主键
      */
     @TableId(type = IdType.ASSIGN_ID)
-    @ApiModelProperty(value = "id")
+    @ApiModelProperty(value = "主键")
     private String id;
 
     /**
@@ -62,6 +60,20 @@ public class FcFishOrder implements Serializable {
     private String realname;
 
     /**
+     * 员工姓名
+     */
+    @Excel(name = "员工姓名", width = 15)
+    @ApiModelProperty(value = "员工姓名")
+    private String name;
+
+    /**
+     * 员工手机号
+     */
+    @Excel(name = "员工手机号", width = 15)
+    @ApiModelProperty(value = "员工手机号")
+    private String phone;
+
+    /**
      * 钓场ID
      */
     @Excel(name = "钓场ID", width = 15)
@@ -74,65 +86,6 @@ public class FcFishOrder implements Serializable {
     @Excel(name = "钓场名称", width = 15)
     @ApiModelProperty(value = "钓场名称")
     private String groundName;
-
-    /**
-     * 预约日期
-     */
-    @Excel(name = "预约日期", width = 15, format = "yyyy-MM-dd")
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @ApiModelProperty(value = "预约日期")
-    private Date date;
-
-    /**
-     * 钓场船只ID
-     */
-    @Excel(name = "钓场船只ID", width = 15)
-    @ApiModelProperty(value = "钓场船只ID")
-    private String boatId;
-
-    /**
-     * 船号
-     */
-    @Excel(name = "船号", width = 15)
-    @ApiModelProperty(value = "船号")
-    private String boatNumber;
-
-    /**
-     * 预约用户姓名
-     */
-    @Excel(name = "预约用户姓名", width = 15)
-    @ApiModelProperty(value = "预约用户姓名")
-    private String name;
-
-    /**
-     * 预约用户手机号
-     */
-    @Excel(name = "预约用户手机号", width = 15)
-    @ApiModelProperty(value = "预约用户手机号")
-    private String phone;
-
-    /**
-     * 预约票价
-     */
-    @Excel(name = "预约票价", width = 15)
-    @ApiModelProperty(value = "预约票价")
-    private BigDecimal fare;
-
-    /**
-     * 预约状态
-     */
-    @Excel(name = "预约状态", width = 15, dicCode = "fish_order_status")
-    @Dict(dicCode = "fish_order_status")
-    @ApiModelProperty(value = "预约状态")
-    private String status;
-
-    /**
-     * 预约修改次数
-     */
-    @Excel(name = "预约修改次数", width = 15)
-    @ApiModelProperty(value = "预约修改次数")
-    private Integer modifyCount;
 
     /**
      * 删除状态（0:正常，1:删除）

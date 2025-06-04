@@ -4,14 +4,15 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.modules.fucci.pojo.dto.FucciGroundBoatOrderDTO;
 import org.jeecg.modules.fucci.pojo.vo.FucciGroundDetailsVO;
 import org.jeecg.modules.fucci.pojo.vo.FucciGroundOrderVO;
 import org.jeecg.modules.fucci.service.IFucciGroundService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 /**
  * @author lhf
@@ -34,15 +35,24 @@ public class FucciGroundController {
 
     @ApiOperation(value = "钓场信息详情接口")
     @GetMapping("/details")
-    public Result<FucciGroundDetailsVO> details(@RequestParam(name = "id") String id) {
-        return Result.ok(fucciGroundService.details(id));
+    public Result<FucciGroundDetailsVO> details(HttpServletRequest request,
+                                                @RequestParam(name = "id") String id) {
+        return Result.ok(fucciGroundService.details(request, id));
     }
 
     @ApiOperation(value = "钓场船只预约信息查询接口")
     @GetMapping("/order")
-    public Result<FucciGroundOrderVO> order(@RequestParam(name = "id") String id,
+    public Result<FucciGroundOrderVO> order(HttpServletRequest request,
+                                            @RequestParam(name = "id") String id,
                                             @RequestParam(name = "date", required = false) String date) {
-        return Result.ok(fucciGroundService.order(id, date));
+        return Result.ok(fucciGroundService.order(request, id, date));
+    }
+
+    @ApiOperation(value = "钓场船只确认预约接口")
+    @PostMapping("/order")
+    public Result<?> confirmOrder(HttpServletRequest request,
+                                  @Valid @RequestBody FucciGroundBoatOrderDTO groundBoatOrderDTO) {
+        return Result.ok(fucciGroundService.confirmOrder(request, groundBoatOrderDTO));
     }
 
 }

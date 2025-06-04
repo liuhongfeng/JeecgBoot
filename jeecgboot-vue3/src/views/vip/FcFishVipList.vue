@@ -4,13 +4,6 @@
     <div class="jeecg-basic-table-form-container">
       <a-form ref="formRef" @keyup.enter.native="searchQuery" :model="queryParam" :label-col="labelCol" :wrapper-col="wrapperCol">
         <a-row :gutter="24">
-          <!-- 根据预约订单ID查询 -->
-          <a-col :lg="6">
-            <a-form-item name="groundName">
-              <template #label><span title="预约订单ID">订单ID</span></template>
-              <a-input placeholder="请输入预约订单ID" v-model:value="queryParam.id" allow-clear ></a-input>
-            </a-form-item>
-          </a-col>
           <a-col :lg="6">
             <a-form-item name="realname">
               <template #label><span title="小程序用户昵称">用户昵称</span></template>
@@ -28,34 +21,16 @@
             </a-form-item>
           </a-col>
           <a-col :lg="6">
-            <a-form-item name="groundName">
-              <template #label><span title="钓场名称">钓场名称</span></template>
-              <a-input placeholder="请输入钓场名称" v-model:value="queryParam.groundName" allow-clear ></a-input>
+            <a-form-item name="name">
+              <template #label><span title="会员姓名">会员姓名</span></template>
+              <a-input placeholder="请输入会员姓名" v-model:value="queryParam.name" allow-clear ></a-input>
             </a-form-item>
           </a-col>
           <template v-if="toggleSearchStatus">
             <a-col :lg="6">
-              <a-form-item name="date">
-                <template #label><span title="预约日期">预约日期</span></template>
-                <a-range-picker value-format="YYYY-MM-DD"  v-model:value="queryParam.date" class="query-group-cust"/>
-              </a-form-item>
-            </a-col>
-            <a-col :lg="6">
-              <a-form-item name="name">
-                <template #label><span title="预约用户姓名">用户姓名</span></template>
-                <a-input placeholder="请输入预约用户姓名" v-model:value="queryParam.name" allow-clear ></a-input>
-              </a-form-item>
-            </a-col>
-            <a-col :lg="6">
               <a-form-item name="phone">
-                <template #label><span title="预约用户手机号">手机号</span></template>
-                <a-input placeholder="请输入预约用户手机号" v-model:value="queryParam.phone" allow-clear ></a-input>
-              </a-form-item>
-            </a-col>
-            <a-col :lg="6">
-              <a-form-item name="status">
-                <template #label><span title="预约状态">预约状态</span></template>
-                <j-select-multiple placeholder="请选择预约状态" v-model:value="queryParam.status" dictCode="fish_order_status" allow-clear />
+                <template #label><span title="会员手机号">手机号</span></template>
+                <a-input placeholder="请输入会员手机号" v-model:value="queryParam.phone" allow-clear ></a-input>
               </a-form-item>
             </a-col>
           </template>
@@ -78,9 +53,9 @@
     <BasicTable @register="registerTable" :rowSelection="rowSelection">
       <!--插槽:table标题-->
       <template #tableTitle>
-        <a-button type="primary" v-auth="'order:fc_fish_order:add'"  @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
-        <a-button  type="primary" v-auth="'order:fc_fish_order:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button>
-        <j-upload-button  type="primary" v-auth="'order:fc_fish_order:importExcel'"  preIcon="ant-design:import-outlined" @click="onImportXls">导入</j-upload-button>
+        <a-button type="primary" v-auth="'vip:fc_fish_vip:add'"  @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
+        <a-button  type="primary" v-auth="'vip:fc_fish_vip:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button>
+        <j-upload-button  type="primary" v-auth="'vip:fc_fish_vip:importExcel'"  preIcon="ant-design:import-outlined" @click="onImportXls">导入</j-upload-button>
         <a-dropdown v-if="selectedRowKeys.length > 0">
           <template #overlay>
             <a-menu>
@@ -90,7 +65,7 @@
               </a-menu-item>
             </a-menu>
           </template>
-          <a-button v-auth="'order:fc_fish_order:deleteBatch'">批量操作
+          <a-button v-auth="'vip:fc_fish_vip:deleteBatch'">批量操作
             <Icon icon="mdi:chevron-down"></Icon>
           </a-button>
         </a-dropdown>
@@ -105,23 +80,22 @@
       </template>
     </BasicTable>
     <!-- 表单区域 -->
-    <FcFishOrderModal ref="registerModal" @success="handleSuccess"></FcFishOrderModal>
+    <FcFishVipModal ref="registerModal" @success="handleSuccess"></FcFishVipModal>
   </div>
 </template>
 
-<script lang="ts" name="order-fcFishOrder" setup>
+<script lang="ts" name="vip-fcFishVip" setup>
   import { ref, reactive } from 'vue';
   import { BasicTable, useTable, TableAction } from '/@/components/Table';
   import { useListPage } from '/@/hooks/system/useListPage';
-  import { columns, superQuerySchema } from './FcFishOrder.data';
-  import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './FcFishOrder.api';
+  import { columns, superQuerySchema } from './FcFishVip.data';
+  import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './FcFishVip.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
-  import FcFishOrderModal from './components/FcFishOrderModal.vue'
+  import FcFishVipModal from './components/FcFishVipModal.vue'
   import { useUserStore } from '/@/store/modules/user';
   import JDictSelectTag from '/@/components/Form/src/jeecg/components/JDictSelectTag.vue';
   import JSelectMultiple from '/@/components/Form/src/jeecg/components/JSelectMultiple.vue';
   import JPopup from '/@/components/Form/src/jeecg/components/JPopup.vue';
-  import { cloneDeep } from "lodash-es";
 
   const formRef = ref();
   const queryParam = reactive<any>({});
@@ -131,7 +105,7 @@
   //注册table数据
   const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
     tableProps: {
-      title: '钓场船只预约',
+      title: '会员信息',
       api: list,
       columns,
       canResize:false,
@@ -141,12 +115,11 @@
         fixed: 'right',
       },
       beforeFetch: async (params) => {
-        let rangerQuery = await setRangeQuery();
-        return Object.assign(params, rangerQuery);
+        return Object.assign(params, queryParam);
       },
     },
     exportConfig: {
-      name: "钓场船只预约",
+      name: "会员信息",
       url: getExportUrl,
       params: queryParam,
     },
@@ -233,7 +206,7 @@
       {
         label: '编辑',
         onClick: handleEdit.bind(null, record),
-        auth: 'order:fc_fish_order:edit'
+        auth: 'vip:fc_fish_vip:edit'
       },
     ];
   }
@@ -253,7 +226,7 @@
           confirm: handleDelete.bind(null, record),
           placement: 'topLeft',
         },
-        auth: 'order:fc_fish_order:delete'
+        auth: 'vip:fc_fish_vip:delete'
       }
     ]
   }
@@ -286,30 +259,6 @@
 
 
 
-  
-  let rangeField = 'date,'
-  
-  /**
-   * 设置范围查询条件
-   */
-  async function setRangeQuery(){
-    let queryParamClone = cloneDeep(queryParam);
-    if (rangeField) {
-      let fieldsValue = rangeField.split(',');
-      fieldsValue.forEach(item => {
-        if (queryParamClone[item]) {
-          let range = queryParamClone[item];
-          queryParamClone[item+'_begin'] = range[0];
-          queryParamClone[item+'_end'] = range[1];
-          delete queryParamClone[item];
-        } else {
-          queryParamClone[item+'_begin'] = '';
-          queryParamClone[item+'_end'] = '';
-        }
-      })
-    }
-    return queryParamClone;
-  }
 </script>
 
 <style lang="less" scoped>

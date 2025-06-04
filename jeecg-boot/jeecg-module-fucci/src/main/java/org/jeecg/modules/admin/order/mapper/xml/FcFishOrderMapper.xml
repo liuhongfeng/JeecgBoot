@@ -9,7 +9,7 @@
         FROM fc_fish_order
         WHERE ground_id = #{groundId}
         AND del_flag = 0
-        AND status = 1
+        AND status in ('1', '3')
         AND `date` &gt;= CURDATE()
         AND `date` &lt; CURDATE() + INTERVAL 30 DAY
         GROUP BY DATE_FORMAT(`date`, '%Y-%m-%d')
@@ -29,11 +29,80 @@
             fc_fish_boat ffb
             LEFT JOIN fc_fish_order ffo ON ffo.boat_id = ffb.id
             AND ffo.del_flag = 0
+            AND ffo.status in ('1', '3')
             AND DATE_FORMAT( ffo.`date`, '%Y-%m-%d' ) = #{orderDate}
         WHERE
             ffb.ground_id = #{groundId}
             AND ffb.del_flag = 0
             AND ffb.status = '1'
+    </select>
+
+    <select id="getOrderByUserId" resultType="org.jeecg.modules.fucci.pojo.vo.FucciOrderVO">
+        SELECT
+            id,
+            ground_id,
+            ground_name,
+            `date`,
+            boat_number,
+            name AS orderName,
+            phone AS orderPhone,
+            fare AS orderFare,
+            `status`,
+            IF(modify_count > 0, 1, 0) AS orderModify,
+            modify_count AS orderModifyCount
+        FROM
+            fc_fish_order
+        WHERE
+            del_flag = 0
+            AND status = '1'
+            AND user_id = #{userId}
+        ORDER BY `date` DESC
+    </select>
+
+    <select id="getOrderById" resultType="org.jeecg.modules.fucci.pojo.vo.FucciOrderVO">
+        SELECT
+            ffo.id,
+            ffo.ground_id,
+            ffo.ground_name,
+            ffo.`date`,
+            ffo.boat_number,
+            ffo.name AS orderName,
+            ffo.phone AS orderPhone,
+            ffo.fare AS orderFare,
+            ffo.`status`,
+            IF(ffo.modify_count > 0, 1, 0) AS orderModify,
+            ffo.modify_count AS orderModifyCount,
+            ffg.phone,
+            ffg.address
+        FROM
+            fc_fish_order ffo
+            LEFT JOIN fc_fish_ground ffg ON ffg.id = ffo.ground_id AND ffg.del_flag = 0
+        WHERE
+            ffo.del_flag = 0
+            AND ffo.status = '1'
+            AND ffo.id = #{id}
+    </select>
+
+    <select id="getOrderByGroundId" resultType="org.jeecg.modules.fucci.pojo.vo.FucciGroundStaffOrderDateVO">
+        SELECT
+            id,
+            user_id,
+            realname,
+            ground_id,
+            ground_name,
+            `date`,
+            boat_id,
+            boat_number,
+            name,
+            phone
+        FROM
+            fc_fish_order
+        WHERE
+            del_flag = 0
+          AND status = '1'
+          AND ground_id = #{groundId}
+          AND `date` &gt;= CURDATE()
+        ORDER BY `date` DESC
     </select>
 
 </mapper>

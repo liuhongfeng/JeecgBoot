@@ -2,15 +2,15 @@
   <a-spin :spinning="confirmLoading">
     <JFormContainer :disabled="disabled">
       <template #detail>
-        <a-form ref="formRef" class="antd-modal-form" :labelCol="labelCol" :wrapperCol="wrapperCol" name="FcFishOrderForm">
+        <a-form ref="formRef" class="antd-modal-form" :labelCol="labelCol" :wrapperCol="wrapperCol" name="FcFishStaffForm">
           <a-row>
 						<a-col :span="24">
-							<a-form-item label="小程序用户ID" v-bind="validateInfos.username" id="FcFishOrderForm-username" name="username">
+							<a-form-item label="小程序用户ID" v-bind="validateInfos.username" id="FcFishStaffForm-username" name="username">
 								<a-input v-model:value="formData.username" placeholder="请输入小程序用户ID" disabled allow-clear ></a-input>
 							</a-form-item>
 						</a-col>
 						<a-col :span="24">
-							<a-form-item label="小程序用户昵称" v-bind="validateInfos.realname" id="FcFishOrderForm-realname" name="realname">
+							<a-form-item label="小程序用户昵称" v-bind="validateInfos.realname" id="FcFishStaffForm-realname" name="realname">
 								<j-popup
 									placeholder="请选择小程序用户昵称"
 									v-model:value="formData.realname"
@@ -25,53 +25,31 @@
 									 allow-clear />							</a-form-item>
 						</a-col>
 						<a-col :span="24">
-							<a-form-item label="钓场名称" v-bind="validateInfos.groundName" id="FcFishOrderForm-groundName" name="groundName">
-								<a-input v-model:value="formData.groundName" placeholder="请输入钓场名称" disabled allow-clear ></a-input>
+							<a-form-item label="员工姓名" v-bind="validateInfos.name" id="FcFishStaffForm-name" name="name">
+								<a-input v-model:value="formData.name" placeholder="请输入员工姓名"  allow-clear ></a-input>
 							</a-form-item>
 						</a-col>
 						<a-col :span="24">
-							<a-form-item label="预约日期" v-bind="validateInfos.date" id="FcFishOrderForm-date" name="date">
-								<a-date-picker placeholder="请选择预约日期"  v-model:value="formData.date" value-format="YYYY-MM-DD"  style="width: 100%"  allow-clear />
+							<a-form-item label="员工手机号" v-bind="validateInfos.phone" id="FcFishStaffForm-phone" name="phone">
+								<a-input v-model:value="formData.phone" placeholder="请输入员工手机号"  allow-clear ></a-input>
 							</a-form-item>
 						</a-col>
 						<a-col :span="24">
-							<a-form-item label="船号" v-bind="validateInfos.boatNumber" id="FcFishOrderForm-boatNumber" name="boatNumber">
+							<a-form-item label="钓场名称" v-bind="validateInfos.groundName" id="FcFishStaffForm-groundName" name="groundName">
 								<j-popup
-									placeholder="请选择船号"
-									v-model:value="formData.boatNumber"
-									code="fc_fish_boat_report"
+									placeholder="请选择钓场名称"
+									v-model:value="formData.groundName"
+									code="fc_fish_ground_report"
 									:fieldConfig="[
 										{ source: 'id', target: 'groundId' },
 										{ source: 'name', target: 'groundName' },
-										{ source: 'boat_id', target: 'boatId' },
-										{ source: 'boat_number', target: 'boatNumber' },
 									]"
 									:multi="false"
 									:setFieldsValue="setFieldsValue"
 									 allow-clear />							</a-form-item>
 						</a-col>
-            <a-col :span="24">
-							<a-form-item label="预约用户姓名" v-bind="validateInfos.name" id="FcFishOrderForm-name" name="name">
-								<a-input v-model:value="formData.name" placeholder="请输入预约用户姓名"  allow-clear ></a-input>
-							</a-form-item>
-						</a-col>
 						<a-col :span="24">
-							<a-form-item label="预约用户手机号" v-bind="validateInfos.phone" id="FcFishOrderForm-phone" name="phone">
-								<a-input v-model:value="formData.phone" placeholder="请输入预约用户手机号"  allow-clear ></a-input>
-							</a-form-item>
-						</a-col>
-						<a-col :span="24">
-							<a-form-item label="预约票价" v-bind="validateInfos.fare" id="FcFishOrderForm-fare" name="fare">
-								<a-input-number v-model:value="formData.fare" placeholder="请输入预约票价" style="width: 100%" />
-							</a-form-item>
-						</a-col>
-						<a-col :span="24">
-							<a-form-item label="预约状态" v-bind="validateInfos.status" id="FcFishOrderForm-status" name="status">
-								<j-dict-select-tag v-model:value="formData.status" dictCode="fish_order_status" placeholder="请选择预约状态"  allow-clear />
-							</a-form-item>
-						</a-col>
-            <a-col :span="24">
-							<a-form-item label="创建日期" v-bind="validateInfos.createTime" id="FcFishOrderForm-createTime" name="createTime">
+							<a-form-item label="创建日期" v-bind="validateInfos.createTime" id="FcFishStaffForm-createTime" name="createTime">
 								<a-date-picker placeholder="请选择创建日期"  v-model:value="formData.createTime" showTime value-format="YYYY-MM-DD HH:mm:ss" style="width: 100%" disabled allow-clear />
 							</a-form-item>
 						</a-col>
@@ -86,10 +64,9 @@
   import { ref, reactive, defineExpose, nextTick, defineProps, computed, onMounted } from 'vue';
   import { defHttp } from '/@/utils/http/axios';
   import { useMessage } from '/@/hooks/web/useMessage';
-  import JDictSelectTag from '/@/components/Form/src/jeecg/components/JDictSelectTag.vue';
   import JPopup from '/@/components/Form/src/jeecg/components/JPopup.vue';
   import { getValueType } from '/@/utils';
-  import { saveOrUpdate } from '../FcFishOrder.api';
+  import { saveOrUpdate } from '../FcFishStaff.api';
   import { Form } from 'ant-design-vue';
   import JFormContainer from '/@/components/Form/src/container/JFormContainer.vue';
   const props = defineProps({
@@ -104,30 +81,22 @@
     id: '',
     username: '',   
     realname: '',   
-    groundName: '',   
-    date: '',   
-    boatNumber: '',   
     name: '',   
     phone: '',   
-    fare: undefined,
-    status: '',   
+    groundName: '',   
     createTime: '',   
   });
   const { createMessage } = useMessage();
   const labelCol = ref<any>({ xs: { span: 24 }, sm: { span: 5 } });
   const wrapperCol = ref<any>({ xs: { span: 24 }, sm: { span: 16 } });
   const confirmLoading = ref<boolean>(false);
-  // 表单验证
+  //表单验证
   const validatorRules = reactive({
     username: [{ required: true, message: '请输入小程序用户ID!'},],
     realname: [{ required: true, message: '请输入小程序用户昵称!'},],
+    name: [{ required: true, message: '请输入员工姓名!'},],
+    phone: [{ required: true, message: '请输入员工手机号!'}, { pattern: /^1[3456789]\d{9}$/, message: '请输入正确的手机号码!'},],
     groundName: [{ required: true, message: '请输入钓场名称!'},],
-    date: [{ required: true, message: '请输入预约日期!'},],
-    boatNumber: [{ required: true, message: '请输入船号!'},],
-    name: [{ required: true, message: '请输入预约用户姓名!'},],
-    phone: [{ required: true, message: '请输入预约用户手机号!'},],
-    fare: [{ required: true, message: '请输入预约票价!'},],
-    status: [{ required: true, message: '请输入预约状态!'},],
   });
   const { resetFields, validate, validateInfos } = useForm(formData, validatorRules, { immediate: false });
 
