@@ -23,6 +23,7 @@ import org.jeecg.modules.admin.vip.entity.FcFishVip;
 import org.jeecg.modules.admin.vip.service.IFcFishVipService;
 import org.jeecg.modules.fucci.common.constant.FucciConstant;
 import org.jeecg.modules.fucci.common.util.UserIdGenerator;
+import org.jeecg.modules.fucci.config.FucciProperties;
 import org.jeecg.modules.fucci.pojo.dto.FucciUserDTO;
 import org.jeecg.modules.fucci.pojo.dto.FucciUserLoginDTO;
 import org.jeecg.modules.fucci.pojo.vo.FucciUserVO;
@@ -45,6 +46,7 @@ public class FucciUserServiceImpl implements IFucciUserService {
     private final ISysUserService sysUserService;
     private final IFcFishVipService fcFishVipService;
     private final IFcFishStaffService fcFishStaffService;
+    private final FucciProperties fucciProperties;
 
     @Override
     public JSONObject login(FucciUserLoginDTO fucciUserLoginDTO) {
@@ -66,6 +68,8 @@ public class FucciUserServiceImpl implements IFucciUserService {
         queryWrapper.eq(SysUser::getThirdId, openid);
         SysUser sysUser = sysUserService.getOne(queryWrapper);
         if (sysUser == null) {
+            // 环境访问地址
+            String path = fucciProperties.getPath();
             // 用户注册信息
             SysUser newUser = new SysUser();
             // 生成「登录账号」（用户ID）
@@ -78,7 +82,7 @@ public class FucciUserServiceImpl implements IFucciUserService {
             newUser.setRealname(FucciConstant.User.REALNAME);
             newUser.setPassword(passwordEncode);
             newUser.setUserIdentity(1);
-            newUser.setAvatar(FucciConstant.User.AVATAR_URL);
+            newUser.setAvatar(path + FucciConstant.User.AVATAR_URI);
             // 第三方登录的唯一标识（微信用户唯一标识 openid）
             newUser.setThirdId(openid);
             newUser.setThirdType(FucciConstant.User.THIRD_TYPE);
