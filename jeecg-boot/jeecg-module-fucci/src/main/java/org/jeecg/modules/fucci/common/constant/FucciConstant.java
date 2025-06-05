@@ -10,6 +10,16 @@ public interface FucciConstant {
      */
     String STATIC_PATH = "/sys/common/static/";
 
+    /**
+     * 支付回调通知 URI
+     */
+    String ORDER_NOTIFY_URI = "/fucci/order/pay/notify/success";
+
+    /**
+     * 退款回调通知 URI
+     */
+    String REFUND_NOTIFY_URI = "/fucci/order/pay/notify/refund";
+
     interface User {
         /**
          * 真实姓名（用户昵称）
@@ -22,9 +32,9 @@ public interface FucciConstant {
         String PASSWORD = "123456";
 
         /**
-         * 用户头像地址
+         * 用户头像地址 URI
          */
-        String AVATAR_URL = "https://api.lureexpert.com/sys/common/static/temp/WechatIMG1881_1743908875667.jpg";
+        String AVATAR_URI = "/sys/common/static/temp/WechatIMG1881_1743908875667.jpg";
 
         /**
          * 第三方类型（微信小程序）
