@@ -1,6 +1,5 @@
 package org.jeecg.modules.fucci.service.impl;
 
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -43,7 +42,10 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -307,11 +309,6 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         // 检查预约订单是否未修改过，修改次数 modifyCount 为 0 时，才可以修改
         if (0 != fcFishOrder.getModifyCount()) {
             throw new JeecgBootException("预约订单已修改过，无法再次修改");
-        }
-        // 检查预约订单日期是否可以修改
-        long betweenDay = DateUtil.between(fcFishOrder.getDate(), new Date(), DateUnit.HOUR);
-        if (new Date().after(fcFishOrder.getDate()) || betweenDay <= 72) {
-            throw new JeecgBootException("预约订单日期只能提前 3 天修改，当前时间无法修改");
         }
     }
 
