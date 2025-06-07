@@ -22,7 +22,8 @@
 									]"
 									:multi="false"
 									:setFieldsValue="setFieldsValue"
-									 allow-clear />							</a-form-item>
+									disabled allow-clear />
+              </a-form-item>
 						</a-col>
 						<a-col :span="24">
 							<a-form-item label="钓场名称" v-bind="validateInfos.groundName" id="FcFishOrderForm-groundName" name="groundName">
@@ -36,10 +37,16 @@
 						</a-col>
 						<a-col :span="24">
 							<a-form-item label="船号" v-bind="validateInfos.boatNumber" id="FcFishOrderForm-boatNumber" name="boatNumber">
-								<j-popup
+                <!--
+                    传递参数对象给子组件或指令。
+                    这里 :param="{ date: formData.date }" 表示将 formData.date 作为 date 属性传递，
+                    便于子组件或指令接收并使用该日期数据。
+                  -->
+                <j-popup
 									placeholder="请选择船号"
 									v-model:value="formData.boatNumber"
 									code="fc_fish_boat_report"
+                  :param="{ date: formData.date, id: formData.id }"
 									:fieldConfig="[
 										{ source: 'id', target: 'groundId' },
 										{ source: 'name', target: 'groundName' },
@@ -48,26 +55,27 @@
 									]"
 									:multi="false"
 									:setFieldsValue="setFieldsValue"
-									 allow-clear />							</a-form-item>
+									allow-clear />
+              </a-form-item>
 						</a-col>
             <a-col :span="24">
 							<a-form-item label="预约用户姓名" v-bind="validateInfos.name" id="FcFishOrderForm-name" name="name">
-								<a-input v-model:value="formData.name" placeholder="请输入预约用户姓名"  allow-clear ></a-input>
+								<a-input v-model:value="formData.name" placeholder="请输入预约用户姓名" disabled allow-clear ></a-input>
 							</a-form-item>
 						</a-col>
 						<a-col :span="24">
 							<a-form-item label="预约用户手机号" v-bind="validateInfos.phone" id="FcFishOrderForm-phone" name="phone">
-								<a-input v-model:value="formData.phone" placeholder="请输入预约用户手机号"  allow-clear ></a-input>
+								<a-input v-model:value="formData.phone" placeholder="请输入预约用户手机号" disabled allow-clear ></a-input>
 							</a-form-item>
 						</a-col>
 						<a-col :span="24">
 							<a-form-item label="预约票价" v-bind="validateInfos.fare" id="FcFishOrderForm-fare" name="fare">
-								<a-input-number v-model:value="formData.fare" placeholder="请输入预约票价" style="width: 100%" />
+								<a-input-number v-model:value="formData.fare" placeholder="请输入预约票价" style="width: 100%" disabled />
 							</a-form-item>
 						</a-col>
 						<a-col :span="24">
 							<a-form-item label="预约状态" v-bind="validateInfos.status" id="FcFishOrderForm-status" name="status">
-								<j-dict-select-tag v-model:value="formData.status" dictCode="fish_order_status" placeholder="请选择预约状态"  allow-clear />
+								<j-dict-select-tag v-model:value="formData.status" dictCode="fish_order_status" placeholder="请选择预约状态" disabled allow-clear />
 							</a-form-item>
 						</a-col>
             <a-col :span="24">
@@ -83,7 +91,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive, defineExpose, nextTick, defineProps, computed, onMounted } from 'vue';
+  import {watch, ref, reactive, defineExpose, nextTick, defineProps, computed, onMounted } from 'vue';
   import { defHttp } from '/@/utils/http/axios';
   import { useMessage } from '/@/hooks/web/useMessage';
   import JDictSelectTag from '/@/components/Form/src/jeecg/components/JDictSelectTag.vue';
@@ -151,11 +159,26 @@
     edit({});
   }
 
+  // 监听用户更改【预约日期】
+  let enableWatch = true;
+  watch(
+    () => formData.date,
+    (newVal, oldVal) => {
+      if (!enableWatch) return;
+      // 只有当用户实际更改日期且不是首次赋值时才清空船号
+      if (oldVal !== undefined && newVal !== oldVal) {
+        console.log('用户更改了预约日期，清空船号');
+        formData.boatNumber = '';
+      }
+    }
+  );
+
   /**
    * 编辑
    */
   function edit(record) {
     nextTick(() => {
+      enableWatch = false; // 暂停监听
       resetFields();
       const tmpData = {};
       Object.keys(formData).forEach((key) => {
@@ -165,6 +188,10 @@
       })
       //赋值
       Object.assign(formData, tmpData);
+      // 下一个 tick 恢复监听
+      nextTick(() => {
+        enableWatch = true;
+      });
     });
   }
 
