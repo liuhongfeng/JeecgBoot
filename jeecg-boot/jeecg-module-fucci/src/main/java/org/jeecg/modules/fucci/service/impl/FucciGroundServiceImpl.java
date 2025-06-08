@@ -42,10 +42,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -309,6 +306,10 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         // 检查预约订单是否未修改过，修改次数 modifyCount 为 0 时，才可以修改
         if (0 != fcFishOrder.getModifyCount()) {
             throw new JeecgBootException("预约订单已修改过，无法再次修改");
+        }
+        // 检查预约订单日期是否可以修改（当日和当日之前的预约订单不能修改）
+        if (new Date().after(fcFishOrder.getDate())) {
+            throw new JeecgBootException("当前时间无法修改预约订单");
         }
     }
 
