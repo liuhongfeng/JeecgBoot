@@ -57,6 +57,13 @@ public interface IFucciOrderService {
     void payClose(String orderId);
 
     /**
+     * 取消预约（管理端-预约管理）
+     *
+     * @param orderId 订单ID
+     */
+    void cancelOrder(String orderId);
+
+    /**
      * 微信支付-支付成功回调通知接口
      *
      * @param request    请求信息

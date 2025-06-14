@@ -10,7 +10,10 @@ import com.github.binarywang.wxpay.bean.notify.SignatureHeader;
 import com.github.binarywang.wxpay.bean.notify.WxPayNotifyV3Response;
 import com.github.binarywang.wxpay.bean.notify.WxPayNotifyV3Result;
 import com.github.binarywang.wxpay.bean.notify.WxPayRefundNotifyV3Result;
+import com.github.binarywang.wxpay.bean.request.BaseWxPayRequest;
+import com.github.binarywang.wxpay.bean.request.WxPayRefundV3Request;
 import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryV3Result;
+import com.github.binarywang.wxpay.bean.result.WxPayRefundV3Result;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
@@ -25,6 +28,8 @@ import org.jeecg.modules.admin.staff.entity.FcFishStaff;
 import org.jeecg.modules.admin.staff.service.IFcFishStaffService;
 import org.jeecg.modules.admin.vip.entity.FcFishVip;
 import org.jeecg.modules.admin.vip.service.IFcFishVipService;
+import org.jeecg.modules.fucci.common.constant.FucciConstant;
+import org.jeecg.modules.fucci.config.FucciProperties;
 import org.jeecg.modules.fucci.pojo.vo.FucciGroundStaffOrderDateVO;
 import org.jeecg.modules.fucci.pojo.vo.FucciGroundStaffOrderVO;
 import org.jeecg.modules.fucci.pojo.vo.FucciOrderPayResultVO;
@@ -58,6 +63,7 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
     private IFcFishVipService fcFishVipService;
     private IFcFishStaffService fcFishStaffService;
     private FcFishOrderMapper fcFishOrderMapper;
+    private FucciProperties fucciProperties;
     private WxPayService wxService;
 
     @Override
@@ -182,6 +188,71 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
         }
     }
 
+    /**
+     * 取消预约
+     */
+    @Override
+    public void cancelOrder(String orderId) {
+        // 环境访问地址
+        String path = fucciProperties.getPath();
+        // 查询「预约状态为 3:已预约（订单待支付）」的超时订单数据
+        LambdaQueryWrapper<FcFishOrder> fcFishOrderWrapper = new LambdaQueryWrapper<>();
+        fcFishOrderWrapper.eq(FcFishOrder::getId, orderId);
+        FcFishOrder order = fcFishOrderMapper.selectOne(fcFishOrderWrapper);
+        log.info("预约订单================>>：" + order.getId());
+        if (!order.getStatus().equals("1") && !order.getStatus().equals("3")) {
+            throw new JeecgBootException("当前订单状态，无法取消预约");
+        }
+        // 更新预约订单状态
+        String updateStatus;
+        if (order.getStatus().equals("1")) {
+            // 2:已取消预约（已退款）
+            updateStatus = "2";
+        } else {
+            // 4:已取消预约（未支付，超时关闭订单）
+            updateStatus = "4";
+        }
+        FcFishOrder fcFishOrder = new FcFishOrder();
+        fcFishOrder.setId(order.getId());
+        fcFishOrder.setStatus(updateStatus);
+        fcFishOrderMapper.updateById(fcFishOrder);
+        // 查询用户是否为 VIP 会员用户（会员用户取消预约，会员次数加1）
+        LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
+        vipQueryWrapper.eq(FcFishVip::getUserId, order.getUserId());
+        FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
+        if (null != fcFishVip) {
+            // 会员次数加1
+            fcFishVip.setCount(fcFishVip.getCount() + 1);
+            fcFishVipService.updateById(fcFishVip);
+        }
+        // 如果更新订单状态为 2:已取消预约（已退款），那么需要进行退款处理
+        if (updateStatus.equals("2")) {
+            log.info("微信支付================取消预约订单，进行退款处理：{}", JSONObject.toJSONString(order));
+            WxPayRefundV3Request request = new WxPayRefundV3Request();
+            // 商户订单号
+            request.setOutTradeNo(order.getId());
+            // 商户退款单号 = 商户订单号 + _refund
+            request.setOutRefundNo(order.getId() + "_refund");
+            request.setReason("预约订单取消退款");
+            // 退款结果通知地址
+            request.setNotifyUrl(path + FucciConstant.REFUND_NOTIFY_URI);
+            // 】订单退款金额信息
+            WxPayRefundV3Request.Amount amount = new WxPayRefundV3Request.Amount();
+            amount.setRefund(BaseWxPayRequest.yuan2Fen(order.getFare()));
+            amount.setTotal(BaseWxPayRequest.yuan2Fen(order.getFare()));
+            amount.setCurrency("CNY");
+            request.setAmount(amount);
+            log.info("微信支付================取消预约订单，进行退款处理请求参数：{}", JSONObject.toJSONString(request));
+            try {
+                // 微信支付-申请退款处理
+                WxPayRefundV3Result refundV3Result = wxService.refundV3(request);
+                log.info("微信支付================取消预约订单，进行退款处理结果：{}", JSONObject.toJSONString(refundV3Result));
+            } catch (WxPayException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ResponseEntity<String> payNotifySuccess(HttpServletRequest request, String notifyData) {
@@ -231,7 +302,9 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
         try {
             WxPayRefundNotifyV3Result res = wxService.parseRefundNotifyV3Result(notifyData, header);
             WxPayRefundNotifyV3Result.DecryptNotifyResult decryptRes = res.getResult();
+            log.info("微信支付================退款回调通知结果：{}", JSONObject.toJSONString(decryptRes));
             if (WxPayConstants.RefundStatus.SUCCESS.equals(decryptRes.getRefundStatus())) {
+                log.info("微信支付================退款回调通知结果====商户订单号：{}", decryptRes.getOutTradeNo());
                 // 成功返回200/204，body无需有内容
                 return ResponseEntity.status(200).body("");
             } else {
