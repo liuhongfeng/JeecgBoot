@@ -192,6 +192,7 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
      * 取消预约
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void cancelOrder(String orderId) {
         // 环境访问地址
         String path = fucciProperties.getPath();
