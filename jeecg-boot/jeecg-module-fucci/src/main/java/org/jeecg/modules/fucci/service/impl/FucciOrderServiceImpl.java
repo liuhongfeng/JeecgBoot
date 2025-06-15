@@ -217,17 +217,17 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
         fcFishOrder.setId(order.getId());
         fcFishOrder.setStatus(updateStatus);
         fcFishOrderMapper.updateById(fcFishOrder);
-        // 查询用户是否为 VIP 会员用户（会员用户取消预约，会员次数加1）
-        LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
-        vipQueryWrapper.eq(FcFishVip::getUserId, order.getUserId());
-        FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
-        if (null != fcFishVip) {
-            // 会员次数加1
-            fcFishVip.setCount(fcFishVip.getCount() + 1);
-            fcFishVipService.updateById(fcFishVip);
-        }
         // 如果更新订单状态为 2:已取消预约（已退款），那么需要进行退款处理
         if (updateStatus.equals("2")) {
+            // 查询用户是否为 VIP 会员用户（会员用户取消预约，会员次数加1）
+            LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
+            vipQueryWrapper.eq(FcFishVip::getUserId, order.getUserId());
+            FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
+            if (null != fcFishVip) {
+                // 会员次数加1
+                fcFishVip.setCount(fcFishVip.getCount() + 1);
+                fcFishVipService.updateById(fcFishVip);
+            }
             log.info("微信支付================取消预约订单，进行退款处理：{}", JSONObject.toJSONString(order));
             WxPayRefundV3Request request = new WxPayRefundV3Request();
             // 商户订单号
