@@ -65,6 +65,18 @@ public class FcFishGround implements Serializable {
     @ApiModelProperty(value = "钓场地址")
     private String address;
     /**
+     * 钓场位置纬度
+     */
+    @Excel(name = "钓场位置纬度", width = 15)
+    @ApiModelProperty(value = "钓场位置纬度")
+    private String latitude;
+    /**
+     * 钓场位置经度
+     */
+    @Excel(name = "钓场位置经度", width = 15)
+    @ApiModelProperty(value = "钓场位置经度")
+    private String longitude;
+    /**
      * 联系电话
      */
     @Excel(name = "联系电话", width = 15)

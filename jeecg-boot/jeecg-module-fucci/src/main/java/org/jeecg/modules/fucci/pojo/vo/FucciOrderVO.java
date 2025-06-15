@@ -56,4 +56,10 @@ public class FucciOrderVO {
     @ApiModelProperty(value = "钓场地址")
     private String address;
 
+    @ApiModelProperty(value = "钓场位置纬度")
+    private String latitude;
+
+    @ApiModelProperty(value = "钓场位置经度")
+    private String longitude;
+
 }
