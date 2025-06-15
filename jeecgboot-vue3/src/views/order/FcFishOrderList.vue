@@ -203,7 +203,15 @@
     registerModal.value.disableSubmit = true;
     registerModal.value.edit(record);
   }
-   
+
+  /**
+   * 取消预约
+   */
+  function handleCancelOrder(record: Recordable) {
+    registerModal.value.disableSubmit = false;
+    registerModal.value.cancelOrder(record);
+  }
+
   /**
    * 删除事件
    */
@@ -254,6 +262,10 @@
           placement: 'topLeft',
         },
         auth: 'order:fc_fish_order:delete'
+      }, {
+        label: '取消预约',
+        onClick: handleCancelOrder.bind(null, record),
+        auth: 'order:fc_fish_order:cancelOrder'
       }
     ]
   }

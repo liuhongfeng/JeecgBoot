@@ -38,12 +38,28 @@
       registerForm.value.edit(record);
     });
   }
+
+  /**
+   * 取消预约
+   * @param record
+   */
+  function cancelOrder(record) {
+    title.value = '取消预约';
+    visible.value = true;
+    nextTick(() => {
+      registerForm.value.cancelOrder(record);
+    });
+  }
   
   /**
    * 确定按钮点击事件
    */
   function handleOk() {
-    registerForm.value.submitForm();
+    if (title.value === '取消预约') {
+      registerForm.value.confirmCancelOrder();
+    } else {
+      registerForm.value.submitForm();
+    }
   }
 
   /**
@@ -64,6 +80,7 @@
   defineExpose({
     add,
     edit,
+    cancelOrder,
     disableSubmit,
   });
 </script>

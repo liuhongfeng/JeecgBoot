@@ -73,7 +73,9 @@
             IF(ffo.modify_count > 0, 1, 0) AS orderModify,
             ffo.modify_count AS orderModifyCount,
             ffg.phone,
-            ffg.address
+            ffg.address,
+            ffg.latitude,
+            ffg.longitude
         FROM
             fc_fish_order ffo
             LEFT JOIN fc_fish_ground ffg ON ffg.id = ffo.ground_id AND ffg.del_flag = 0
