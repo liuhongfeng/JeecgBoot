@@ -219,11 +219,11 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
         fcFishOrderMapper.updateById(fcFishOrder);
         // 如果更新订单状态为 2:已取消预约（已退款），那么需要进行退款处理
         if (updateStatus.equals("2")) {
-            // 查询用户是否为 VIP 会员用户（会员用户取消预约，会员次数加1）
+            // 预约单是否按会员价格下单 && 用户是否为 VIP 会员用户
             LambdaQueryWrapper<FcFishVip> vipQueryWrapper = new LambdaQueryWrapper<>();
             vipQueryWrapper.eq(FcFishVip::getUserId, order.getUserId());
             FcFishVip fcFishVip = fcFishVipService.getOne(vipQueryWrapper);
-            if (null != fcFishVip) {
+            if (order.getVip() == 1 && null != fcFishVip) {
                 // 会员次数加1
                 fcFishVip.setCount(fcFishVip.getCount() + 1);
                 fcFishVipService.updateById(fcFishVip);
