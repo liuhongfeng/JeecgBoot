@@ -210,7 +210,10 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
             validateOrderModification(fcFishOrder, groundBoatOrderDTO);
             // 修改预约订单数据
             fcFishOrder.setDate(DateUtil.parse(groundBoatOrderDTO.getDate()));
-            fcFishOrder.setBoatId(groundBoatOrderDTO.getBoatId());
+            // 更新船只ID
+            fcFishOrder.setBoatId(fishBoat.getId());
+            // 同时也要更新船号
+            fcFishOrder.setBoatNumber(fishBoat.getBoatNumber());
             // 预约修改次数加 1
             fcFishOrder.setModifyCount(fcFishOrder.getModifyCount() + 1);
             fcFishOrderMapper.updateById(fcFishOrder);
