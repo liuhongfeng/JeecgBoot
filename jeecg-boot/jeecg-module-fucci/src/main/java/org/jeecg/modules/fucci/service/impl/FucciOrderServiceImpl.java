@@ -237,7 +237,7 @@ public class FucciOrderServiceImpl implements IFucciOrderService {
             request.setReason("预约订单取消退款");
             // 退款结果通知地址
             request.setNotifyUrl(path + FucciConstant.REFUND_NOTIFY_URI);
-            // 】订单退款金额信息
+            // 订单退款金额信息
             WxPayRefundV3Request.Amount amount = new WxPayRefundV3Request.Amount();
             amount.setRefund(BaseWxPayRequest.yuan2Fen(order.getFare()));
             amount.setTotal(BaseWxPayRequest.yuan2Fen(order.getFare()));
