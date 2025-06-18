@@ -210,7 +210,10 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
             validateOrderModification(fcFishOrder, groundBoatOrderDTO);
             // 修改预约订单数据
             fcFishOrder.setDate(DateUtil.parse(groundBoatOrderDTO.getDate()));
-            fcFishOrder.setBoatId(groundBoatOrderDTO.getBoatId());
+            // 更新船只ID
+            fcFishOrder.setBoatId(fishBoat.getId());
+            // 同时也要更新船号
+            fcFishOrder.setBoatNumber(fishBoat.getBoatNumber());
             // 预约修改次数加 1
             fcFishOrder.setModifyCount(fcFishOrder.getModifyCount() + 1);
             fcFishOrderMapper.updateById(fcFishOrder);
@@ -265,6 +268,8 @@ public class FucciGroundServiceImpl implements IFucciGroundService {
         fcFishOrder.setBoatNumber(fishBoat.getBoatNumber());
         fcFishOrder.setName(groundBoatOrderDTO.getName());
         fcFishOrder.setPhone(groundBoatOrderDTO.getPhone());
+        // 是否会员预约（0:否，1:是）
+        fcFishOrder.setVip(vip ? 1 : 0);
         fcFishOrder.setFare(groundBoatOrderDTO.getFare());
         // 预约状态 1:已预约（支付完成） 2:已取消预约（已退款） 3:已预约（订单待支付） 4:已取消预约（超时关闭订单）
         fcFishOrder.setStatus("3");

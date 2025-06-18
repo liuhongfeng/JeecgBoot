@@ -14,7 +14,7 @@
 								<j-popup
 									placeholder="请选择小程序用户昵称"
 									v-model:value="formData.realname"
-									code="fc_fish_user_report"
+									code="fc_fish_no_staff_user_report"
 									:fieldConfig="[
 										{ source: 'id', target: 'userId' },
 										{ source: 'username', target: 'username' },
