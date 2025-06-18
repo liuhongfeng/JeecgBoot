@@ -32,7 +32,13 @@
 						</a-col>
 						<a-col :span="24">
 							<a-form-item label="预约日期" v-bind="validateInfos.date" id="FcFishOrderForm-date" name="date">
-								<a-date-picker placeholder="请选择预约日期"  v-model:value="formData.date" value-format="YYYY-MM-DD"  style="width: 100%"  allow-clear />
+								<a-date-picker 
+                  placeholder="请选择预约日期" 
+                  v-model:value="formData.date" 
+                  value-format="YYYY-MM-DD" 
+                  style="width: 100%" 
+                  :disabled="formData._disableDate"
+                  allow-clear />
 							</a-form-item>
 						</a-col>
 						<a-col :span="24">
@@ -55,6 +61,7 @@
 									]"
 									:multi="false"
 									:setFieldsValue="setFieldsValue"
+                  :disabled="formData._disableBoatNumber"
 									allow-clear />
               </a-form-item>
 						</a-col>
@@ -98,6 +105,7 @@
   import JPopup from '/@/components/Form/src/jeecg/components/JPopup.vue';
   import { getValueType } from '/@/utils';
   import { saveOrUpdate } from '../FcFishOrder.api';
+  import { adminCancelOrder } from '../FcFishOrder.api';
   import { Form } from 'ant-design-vue';
   import JFormContainer from '/@/components/Form/src/container/JFormContainer.vue';
   const props = defineProps({
@@ -196,6 +204,31 @@
   }
 
   /**
+   * 取消预约
+   */
+  function cancelOrder(record) {
+    nextTick(() => {
+      enableWatch = false; // 暂停监听
+      resetFields();
+      const tmpData = {};
+      Object.keys(formData).forEach((key) => {
+        if(record.hasOwnProperty(key)){
+          tmpData[key] = record[key]
+        }
+      })
+      // 赋值
+      Object.assign(formData, tmpData);
+      // 设置预约日期和船号为禁用
+      formData._disableDate = true;
+      formData._disableBoatNumber = true;
+      // 下一个 tick 恢复监听
+      nextTick(() => {
+        enableWatch = true;
+      });
+    });
+  }
+
+  /**
    * 提交数据
    */
   async function submitForm() {
@@ -244,6 +277,36 @@
   }
 
   /**
+   * 取消预约
+   */
+  async function confirmCancelOrder() {
+    let model = formData;
+    //循环数据
+    for (let data in model) {
+      //如果该数据是数组并且是字符串类型
+      if (model[data] instanceof Array) {
+        let valueType = getValueType(formRef.value.getProps, data);
+        //如果是字符串类型的需要变成以逗号分割的字符串
+        if (valueType === 'string') {
+          model[data] = model[data].join(',');
+        }
+      }
+    }
+    await adminCancelOrder(model)
+      .then((res) => {
+        if (res.success) {
+          createMessage.success(res.message);
+          emit('ok');
+        } else {
+          createMessage.warning(res.message);
+        }
+      })
+      .finally(() => {
+        confirmLoading.value = false;
+      });
+  }
+
+  /**
    *  popup组件值改变事件
    */
   function setFieldsValue(map) {
@@ -255,7 +318,9 @@
   defineExpose({
     add,
     edit,
+    cancelOrder,
     submitForm,
+    confirmCancelOrder,
   });
 </script>
 

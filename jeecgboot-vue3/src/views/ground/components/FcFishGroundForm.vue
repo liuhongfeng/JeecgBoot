@@ -29,6 +29,16 @@
 								<a-input v-model:value="formData.address" placeholder="请输入钓场地址"  allow-clear ></a-input>
 							</a-form-item>
 						</a-col>
+            <a-col :span="24">
+							<a-form-item label="钓场位置纬度" v-bind="validateInfos.latitude" id="FcFishGroundForm-latitude" name="latitude">
+								<a-input v-model:value="formData.latitude" placeholder="请输入钓场位置纬度"  allow-clear ></a-input>
+							</a-form-item>
+						</a-col>
+						<a-col :span="24">
+							<a-form-item label="钓场位置经度" v-bind="validateInfos.longitude" id="FcFishGroundForm-longitude" name="longitude">
+								<a-input v-model:value="formData.longitude" placeholder="请输入钓场位置经度"  allow-clear ></a-input>
+							</a-form-item>
+						</a-col>
 						<a-col :span="24">
 							<a-form-item label="联系电话" v-bind="validateInfos.phone" id="FcFishGroundForm-phone" name="phone">
 								<a-input v-model:value="formData.phone" placeholder="请输入联系电话"  allow-clear ></a-input>
@@ -155,6 +165,8 @@
         detailsImage: '',   
         introduce: '',   
         address: '',   
+        latitude: '',   
+        longitude: '',   
         phone: '',   
         positionQuantity: undefined,
         startTime: '',   
@@ -174,6 +186,8 @@
         detailsImage: [{ required: true, message: '请输入钓场详情图!'},],
         introduce: [{ required: true, message: '请输入钓场介绍!'},],
         address: [{ required: true, message: '请输入钓场地址!'},],
+        latitude: [{ required: true, message: '请输入钓场位置纬度!'},],
+        longitude: [{ required: true, message: '请输入钓场位置经度!'},],
         phone: [{ required: true, message: '请输入联系电话!'},],
         positionQuantity: [{ required: true, message: '请输入钓位数量!'},],
         startTime: [{ required: true, message: '请输入营业开始时间!'},],

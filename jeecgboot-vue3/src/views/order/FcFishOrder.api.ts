@@ -7,6 +7,7 @@ enum Api {
   list = '/order/fcFishOrder/list',
   save='/order/fcFishOrder/add',
   edit='/order/fcFishOrder/edit',
+  cancelOrder='/order/fcFishOrder/cancelOrder',
   deleteOne = '/order/fcFishOrder/delete',
   deleteBatch = '/order/fcFishOrder/deleteBatch',
   importExcel = '/order/fcFishOrder/importExcel',
@@ -69,4 +70,12 @@ export const batchDelete = (params, handleSuccess) => {
 export const saveOrUpdate = (params, isUpdate) => {
   let url = isUpdate ? Api.edit : Api.save;
   return defHttp.post({ url: url, params }, { isTransformResponse: false });
+}
+
+/**
+ * 取消预约
+ * @param params
+ */
+export const adminCancelOrder = (params) => {
+  return defHttp.post({ url: Api.cancelOrder, params }, { isTransformResponse: false });
 }

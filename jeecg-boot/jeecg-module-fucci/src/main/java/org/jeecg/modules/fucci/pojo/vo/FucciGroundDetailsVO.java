@@ -45,6 +45,18 @@ public class FucciGroundDetailsVO {
     private String address;
 
     /**
+     * 钓场位置纬度
+     */
+    @ApiModelProperty(value = "钓场位置纬度")
+    private String latitude;
+
+    /**
+     * 钓场位置经度
+     */
+    @ApiModelProperty(value = "钓场位置经度")
+    private String longitude;
+
+    /**
      * 营业开始时间
      */
     @ApiModelProperty(value = "营业开始时间")

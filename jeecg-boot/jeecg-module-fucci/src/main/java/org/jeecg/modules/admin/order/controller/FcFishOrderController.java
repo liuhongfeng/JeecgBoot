@@ -13,6 +13,7 @@ import org.jeecg.common.system.base.controller.JeecgController;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.modules.admin.order.entity.FcFishOrder;
 import org.jeecg.modules.admin.order.service.IFcFishOrderService;
+import org.jeecg.modules.fucci.service.IFucciOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -34,6 +35,8 @@ import java.util.Arrays;
 public class FcFishOrderController extends JeecgController<FcFishOrder, IFcFishOrderService> {
     @Autowired
     private IFcFishOrderService fcFishOrderService;
+    @Autowired
+    private IFucciOrderService fucciOrderService;
 
     /**
      * 分页列表查询
@@ -157,6 +160,18 @@ public class FcFishOrderController extends JeecgController<FcFishOrder, IFcFishO
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, FcFishOrder.class);
+    }
+
+    /**
+     * 取消预约
+     */
+    @AutoLog(value = "钓场船只预约-取消预约")
+    @ApiOperation(value = "钓场船只预约-取消预约", notes = "钓场船只预约-取消预约")
+    @RequiresPermissions("order:fc_fish_order:cancelOrder")
+    @RequestMapping(value = "/cancelOrder", method = {RequestMethod.PUT, RequestMethod.POST})
+    public Result<String> cancelOrder(@RequestBody FcFishOrder fcFishOrder) {
+        fucciOrderService.cancelOrder(fcFishOrder.getId());
+        return Result.OK("操作成功!");
     }
 
 }

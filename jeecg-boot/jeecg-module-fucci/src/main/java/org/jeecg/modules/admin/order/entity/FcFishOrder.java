@@ -113,6 +113,13 @@ public class FcFishOrder implements Serializable {
     private String phone;
 
     /**
+     * 是否会员预约（0:否，1:是）
+     */
+    @Excel(name = "是否会员预约（0:否，1:是）", width = 15)
+    @ApiModelProperty(value = "是否会员预约（0:否，1:是）")
+    private Integer vip;
+
+    /**
      * 预约票价
      */
     @Excel(name = "预约票价", width = 15)
